@@ -1,0 +1,59 @@
+/* Bố cục chia đôi của Screen 10 Đăng nhập và Screen 11 Tạo tài khoản: ảnh điểm đến bên trái, form bên phải. */
+.auth-layout { flex: 1; display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; background: var(--white); }
+
+.auth-visual {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-8);
+  color: var(--white);
+  background: linear-gradient(180deg, var(--pine) 0%, var(--ink) 100%);
+  overflow: hidden;
+}
+.auth-visual .brand { color: var(--white); }
+.auth-visual .brand-mark { background: var(--white); color: var(--ink); }
+.auth-visual-body { margin: auto 0; max-width: 480px; }
+.auth-visual h1 { font-size: 48px; line-height: 1.1; margin-bottom: var(--space-4); }
+.auth-visual p { opacity: .9; margin: 0 0 var(--space-6); }
+.auth-credit { font-size: var(--fs-small); opacity: .7; }
+
+.auth-trip { display: inline-flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-control); background: rgba(0, 0, 0, .3); backdrop-filter: blur(4px); }
+.auth-trip strong { display: block; }
+.auth-trip span { font-size: var(--fs-small); opacity: .8; }
+
+.auth-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.auth-steps li { display: flex; align-items: center; gap: var(--space-3); }
+.auth-steps b { width: 32px; height: 32px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--sun); color: var(--ink); }
+
+.auth-main { display: grid; place-items: center; padding: var(--space-8) var(--space-6); }
+.auth-form { width: 100%; max-width: 400px; }
+.auth-form h2 { margin-bottom: var(--space-1); }
+.auth-form .subtitle { color: var(--muted); margin: 0 0 var(--space-6); }
+.auth-form .input { width: 100%; }
+.auth-form .btn { width: 100%; }
+.auth-links { margin-top: var(--space-6); text-align: center; font-size: var(--fs-meta); display: grid; gap: var(--space-2); }
+.auth-links a, .field-error a { color: var(--coral); font-weight: 600; }
+
+.password-wrap { position: relative; }
+.password-wrap .input { padding-right: 48px; }
+.password-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: 0; background: none; cursor: pointer; font-size: 18px; padding: var(--space-1); }
+.caps-warning { color: var(--warning); font-size: var(--fs-small); font-weight: 600; }
+.caps-warning[hidden] { display: none; }
+
+.check { display: flex; align-items: center; gap: var(--space-2); font-size: var(--fs-meta); margin-bottom: var(--space-4); cursor: pointer; }
+
+.strength { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-1); margin-top: var(--space-1); }
+.strength span { height: 4px; border-radius: 2px; background: var(--border); }
+.strength[data-level='1'] span:nth-child(-n+1) { background: var(--danger); }
+.strength[data-level='2'] span:nth-child(-n+2) { background: var(--sun); }
+.strength[data-level='3'] span { background: var(--success); }
+.strength-list { list-style: none; margin: var(--space-1) 0 0; padding: 0; font-size: var(--fs-small); color: var(--muted); }
+.strength-list li::before { content: '○ '; }
+.strength-list li.ok { color: var(--success); }
+.strength-list li.ok::before { content: '✓ '; }
+
+@media (max-width: 768px) {
+  .auth-layout { grid-template-columns: 1fr; }
+  .auth-visual { display: none; }
+  .auth-main { padding: var(--space-6) var(--space-4); }
+}

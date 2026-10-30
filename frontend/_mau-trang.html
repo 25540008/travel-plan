@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trang mẫu component · Travelplan</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+</head>
+<!-- TRANG MẪU cho nhóm: chép file này khi làm màn hình mới, đổi data-page và phần <main>. -->
+<body data-page="">
+  <div id="site-header"></div>
+
+  <main class="container section">
+    <h1>Component dùng chung</h1>
+
+    <section class="card" style="margin-bottom:24px">
+      <h3>Nút và nhãn</h3>
+      <p style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-primary">Hành động chính</button>
+        <button class="btn btn-dark">Nút đậm</button>
+        <button class="btn btn-secondary">Nút phụ</button>
+      </p>
+      <p style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="chip chip-dark">Đang đi · ngày 2/3</span>
+        <span class="chip chip-coral">Mai đi rồi</span>
+        <span class="chip chip-outline">Còn 19 ngày</span>
+        <span class="chip">Đã đi</span>
+      </p>
+      <div class="alert alert-warning">⚠ Cảnh báo trùng giờ, vượt ngân sách</div>
+    </section>
+
+    <section class="card" style="margin-bottom:24px">
+      <h3>Toast và popup</h3>
+      <p style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-secondary" data-toast="success">Toast xanh</button>
+        <button class="btn btn-secondary" data-toast="warning">Toast vàng</button>
+        <button class="btn btn-secondary" data-toast="error">Toast đỏ</button>
+        <button class="btn btn-secondary" id="btn-confirm">Popup xác nhận</button>
+        <button class="btn btn-secondary" id="btn-expired">Giả lập hết phiên (401)</button>
+      </p>
+    </section>
+
+    <section class="card" style="margin-bottom:24px;max-width:560px">
+      <h3>Form theo CBR 1</h3>
+      <form id="demo-form">
+        <div class="field">
+          <label for="title">Tên chuyến</label>
+          <input class="input" id="title" name="title" required data-maxlength="150" placeholder="Đà Lạt chill cuối tuần">
+          <div class="field-error"></div>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input class="input" id="email" name="email" type="email" required>
+          <div class="field-error"></div>
+        </div>
+        <div class="field">
+          <label for="budget">Ngân sách</label>
+          <input class="input" id="budget" name="budget" data-type="money" inputmode="numeric" placeholder="5.000.000">
+          <div class="field-error"></div>
+        </div>
+        <button class="btn btn-primary" type="submit">Lưu</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h3>Định dạng (CBR 9)</h3>
+      <ul id="formats" class="meta"></ul>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script type="module" src="js/layout.js"></script>
+  <script type="module">
+    import { toast, confirmDialog, bindForm, formData } from './js/ui.js';
+    import { msg } from './js/messages.js';
+    import { formatMoney, formatMoneyShort, formatDate, formatTime, formatDuration } from './js/format.js';
+    import { saveSession } from './js/auth.js';
+    import { get } from './js/api.js';
+
+    document.querySelectorAll('[data-toast]').forEach((b) =>
+      b.addEventListener('click', () => toast(msg('MSG 34'), b.dataset.toast)));
+    document.getElementById('btn-confirm').addEventListener('click', async () => {
+      const ok = await confirmDialog(msg('MSG 27'), { okText: 'Xóa', danger: true });
+      toast(ok ? 'Đã bấm Xóa' : 'Đã bấm Hủy', ok ? 'success' : 'warning');
+    });
+    // Gửi một token sai tới route cần đăng nhập → backend trả 401 → api.js hiện MSG 10 và về đăng nhập.
+    document.getElementById('btn-expired').addEventListener('click', () => {
+      saveSession('token-het-han', { fullName: 'Nguyễn Văn A' });
+      get('/_example/trips').catch(() => {});
+    });
+    bindForm(document.getElementById('demo-form'), (form) => toast(JSON.stringify(formData(form))));
+
+    document.getElementById('formats').innerHTML = [
+      `formatMoney(3500000) → ${formatMoney(3500000)}`,
+      `formatMoneyShort(2200000) → ${formatMoneyShort(2200000)}`,
+      `formatDate('2026-10-23') → ${formatDate('2026-10-23')}`,
+      `formatTime('14:00:00') → ${formatTime('14:00:00')}`,
+      `formatDuration('2026-10-23', '2026-10-25') → ${formatDuration('2026-10-23', '2026-10-25')}`,
+    ].map((s) => `<li>${s}</li>`).join('');
+  </script>
+</body>
+</html>

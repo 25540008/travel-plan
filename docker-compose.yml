@@ -1,0 +1,48 @@
+# Môi trường local cho cả nhóm: docker compose up -d
+#   Frontend  http://localhost:8080
+#   Backend   http://localhost:3000/api/health
+#   Postgres  localhost:5432 (postgres / postgres, db travelplan)
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: travelplan
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d travelplan"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./Backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/travelplan
+      NODE_ENV: development
+      JWT_SECRET: local-dev-secret
+      CORS_ORIGINS: http://localhost:8080
+      PORT: 3000
+      # Chạy prisma/seed.js mỗi lần khởi động: tài khoản demo@travelplan.vn / Demo@123
+      SEED_ON_START: "true"
+    ports:
+      - "3000:3000"
+
+  frontend:
+    image: nginx:1.27-alpine
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata:

@@ -1,0 +1,59 @@
+/* Design token Travelplan (SRS 8.5, Screen 13 Style guide). Mọi trang dùng biến ở đây, không ghi mã màu trực tiếp. */
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lexend:wght@500;600;700&display=swap');
+
+:root {
+  /* Màu */
+  --ink: #10302e;        /* Thông đậm: chữ, nút đậm */
+  --pine: #2f6b5c;       /* Thông: ảnh bìa, tiến độ */
+  --coral: #d9512c;      /* San hô: hành động chính */
+  --coral-dark: #b9411f;
+  --sun: #f2c25b;        /* Nắng: điểm nhấn trên nền tối */
+  --lake: #3c7fa0;       /* Hồ: biển, nước */
+  --mist: #e3eee8;       /* Sương: nền chọn */
+  --paper: #f4f6f2;      /* Giấy: nền trang */
+  --white: #ffffff;
+  --muted: #4a5e5b;      /* Chữ phụ: meta, nhãn */
+  --border: #dce3df;
+
+  --success: #2f6b5c;
+  --success-bg: #e3eee8;
+  --warning: #8a5a00;
+  --warning-bg: #fff7e0;
+  --warning-border: #f2c25b;
+  --danger: #c0392b;
+  --danger-bg: #fdecea;
+
+  /* Chữ */
+  --font-heading: 'Lexend', system-ui, sans-serif;
+  --font-body: 'Be Vietnam Pro', system-ui, sans-serif;
+  --fs-display: 60px;
+  --fs-h1: 40px;
+  --fs-h2: 32px;
+  --fs-h3: 20px;
+  --fs-body: 16px;
+  --fs-meta: 14px;
+  --fs-small: 13px;
+
+  /* Bo góc */
+  --radius-card: 20px;
+  --radius-control: 12px;
+  --radius-pill: 999px;
+
+  /* Khoảng cách (lưới 4) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Khung */
+  --content-width: 1280px;
+  --control-height: 48px;
+  --header-height: 72px;
+
+  /* Bóng thẻ nổi */
+  --shadow-card: 0 16px 40px rgba(16, 48, 46, 0.1);
+}

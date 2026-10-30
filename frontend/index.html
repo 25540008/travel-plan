@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Travelplan · Lên kèo. Chốt lịch. Xách balo đi.</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+</head>
+<body data-page="home">
+  <div id="site-header"></div>
+
+  <!-- Screen 1 Trang chủ: nội dung làm ở TP-38. Hiện chỉ là khung để kiểm tra header/footer. -->
+  <main class="container section">
+    <p class="eyebrow">Travelplan</p>
+    <h1 class="display">Lên kèo. Chốt lịch.<br>Xách balo đi.</h1>
+    <p class="meta">Khám phá lịch trình người khác đã đi thật, dùng lại chỉ với một cú bấm.</p>
+    <p class="meta" id="api-status">Đang kiểm tra kết nối backend…</p>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script type="module" src="js/layout.js"></script>
+  <script type="module">
+    import { get } from './js/api.js';
+    const el = document.getElementById('api-status');
+    get('/health', { auth: false, silent: true })
+      .then(() => (el.textContent = 'Backend: đã kết nối ✓'))
+      .catch(() => (el.textContent = 'Backend: chưa chạy (npm run dev trong Backend/)'));
+  </script>
+</body>
+</html>

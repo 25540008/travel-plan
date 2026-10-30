@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tạo tài khoản · Travelplan</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<!-- Screen 11: Tạo tài khoản (UC 1, TP-13) -->
+<body data-page="register">
+  <div class="auth-layout">
+    <aside class="auth-visual">
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">✦</span>travelplan</a>
+      <div class="auth-visual-body">
+        <h1>Lên kèo chuyến đầu<br>tiên trong 3 bước.</h1>
+        <ol class="auth-steps">
+          <li><b>1</b>Tạo chuyến: điểm đến, ngày đi, ngân sách</li>
+          <li><b>2</b>Xếp hoạt động cho từng ngày</li>
+          <li><b>3</b>Ghi chi tiêu, biết còn tiêu được bao nhiêu</li>
+        </ol>
+      </div>
+    </aside>
+
+    <main class="auth-main">
+      <form class="auth-form" id="register-form" novalidate>
+        <h2>Tạo tài khoản</h2>
+        <p class="subtitle">Miễn phí. Chỉ bạn thấy được chuyến đi của mình.</p>
+
+        <div class="field">
+          <label for="fullName">Họ và tên</label>
+          <input class="input" type="text" id="fullName" name="fullName" required data-maxlength="100" autocomplete="name" placeholder="Đỗ Dương">
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input class="input" type="email" id="email" name="email" required data-maxlength="150" autocomplete="email" placeholder="duong@gmail.com">
+        </div>
+
+        <div class="field">
+          <label for="password">Mật khẩu</label>
+          <div class="password-wrap">
+            <input class="input" type="password" id="password" name="password" autocomplete="new-password" placeholder="••••••••">
+            <button type="button" class="password-toggle" aria-label="Hiện mật khẩu" aria-pressed="false">👁</button>
+          </div>
+          <div class="caps-warning" hidden>⚠ Caps Lock đang bật</div>
+          <!-- Thanh độ mạnh chỉ gợi ý, không chặn việc tạo tài khoản (UC 1 · BR 2) -->
+          <div class="strength" id="strength" data-level="0" aria-hidden="true"><span></span><span></span><span></span></div>
+          <ul class="strength-list" id="strength-list">
+            <li data-rule="length">Ít nhất 6 ký tự</li>
+            <li data-rule="match">Hai lần nhập khớp nhau</li>
+            <li data-rule="mix">Nên có cả chữ và số</li>
+          </ul>
+        </div>
+
+        <div class="field">
+          <label for="confirmPassword">Nhập lại mật khẩu</label>
+          <div class="password-wrap">
+            <input class="input" type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="••••••••">
+            <button type="button" class="password-toggle" aria-label="Hiện mật khẩu" aria-pressed="false">👁</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
+
+        <div class="auth-links">
+          <span>Đã có tài khoản? <a href="dang-nhap.html" id="login-link">Đăng nhập</a></span>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script type="module">
+    import { post } from './js/api.js';
+    import { pageUrl } from './js/config.js';
+    import { redirectIfLoggedIn, saveSession, goAfterLogin } from './js/auth.js';
+    import { validateInput, showFieldError, clearFieldError, applyServerErrors, toast } from './js/ui.js';
+    import { msg } from './js/messages.js';
+    import { initPasswordFields } from './js/password.js';
+
+    // UC 1 · B2: đã đăng nhập thì sang Screen 5.
+    redirectIfLoggedIn();
+    initPasswordFields();
+
+    const form = document.getElementById('register-form');
+    const { fullName, email, password, confirmPassword } = form.elements;
+    const submit = form.querySelector('[type="submit"]');
+
+    // Giữ next khi quay về Screen 10.
+    const query = new URLSearchParams(location.search);
+    const loginHref = query.toString() ? `${pageUrl('login')}?${query}` : pageUrl('login');
+    document.getElementById('login-link').href = loginHref;
+
+    // Mật khẩu không trim, giống backend.
+    const checkPassword = () => {
+      if (!password.value) return msg('MSG 29', { label: 'mật khẩu' });
+      if (password.value.length < 6 || password.value.length > 100) return msg('MSG 4');
+      return '';
+    };
+    const checkConfirm = () => {
+      if (!confirmPassword.value) return msg('MSG 29', { label: 'lại mật khẩu' });
+      return confirmPassword.value === password.value ? '' : msg('MSG 5');
+    };
+    const checks = [
+      [fullName, () => validateInput(fullName)],
+      [email, () => validateInput(email)],
+      [password, () => apply(password, checkPassword())],
+      [confirmPassword, () => apply(confirmPassword, checkConfirm())],
+    ];
+    function apply(input, error) {
+      if (error) showFieldError(input, error);
+      else clearFieldError(input);
+      return !error;
+    }
+    for (const [input, check] of checks) input.addEventListener('blur', check);
+
+    // Thanh độ mạnh + checklist (Screen 11 #5).
+    const strength = document.getElementById('strength');
+    const rules = Object.fromEntries([...document.querySelectorAll('#strength-list li')].map((li) => [li.dataset.rule, li]));
+    function updateStrength() {
+      const v = password.value;
+      const ok = {
+        length: v.length >= 6,
+        match: v.length > 0 && v === confirmPassword.value,
+        mix: /\d/.test(v) && /\p{L}/u.test(v),
+      };
+      for (const [rule, li] of Object.entries(rules)) li.classList.toggle('ok', ok[rule]);
+      strength.dataset.level = v ? String(!ok.length ? 1 : ok.mix ? 3 : 2) : '0';
+    }
+    password.addEventListener('input', updateStrength);
+    confirmPassword.addEventListener('input', updateStrength);
+
+    // MSG 7 kèm link [Đăng nhập luôn?] mang theo email đã gõ.
+    function showEmailTaken() {
+      showFieldError(email, '');
+      const el = document.getElementById(email.getAttribute('aria-describedby'));
+      const link = document.createElement('a');
+      const params = new URLSearchParams(query);
+      params.set('email', email.value.trim());
+      link.href = `${pageUrl('login')}?${params}`;
+      link.textContent = 'Đăng nhập luôn?';
+      el.append('Email này đã có tài khoản. ', link);
+      email.focus();
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const invalid = checks.filter(([, check]) => !check()).map(([input]) => input);
+      if (invalid.length) return invalid[0].focus();
+
+      submit.disabled = true;
+      try {
+        const res = await post('/auth/register', {
+          fullName: fullName.value.trim(),
+          email: email.value.trim(),
+          password: password.value,
+          confirmPassword: confirmPassword.value,
+        }, { auth: false });
+        // UC 1 · BR 4: lưu token ở localStorage, MSG 20, rồi về next hoặc Screen 5.
+        saveSession(res.token, res.user, { remember: true });
+        toast(msg('MSG 20'));
+        setTimeout(goAfterLogin, 1200);
+      } catch (err) {
+        submit.disabled = false;
+        if (err.status === 409) return showEmailTaken();
+        if (err.status === 400 && applyServerErrors(form, err.errors)) return;
+        if (err.status && err.status < 500) toast(err.message, 'error');
+        return;
+      }
+    });
+  </script>
+</body>
+</html>

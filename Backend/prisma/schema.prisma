@@ -1,0 +1,115 @@
+// Schema Travelplan (SRS v1.1, NFR 9). Tên bảng và cột giữ như travel_planner.sql
+// (snake_case qua @map) để script chuyển dữ liệu cũ chép thẳng được.
+// Mỗi thay đổi bảng là một migration mới: npx prisma migrate dev --name <ten-thay-doi>
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ExpenseCategory {
+  TRANSPORT
+  ACCOMMODATION
+  FOOD
+  SIGHTSEEING
+  SHOPPING
+  OTHER
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  fullName     String   @map("full_name") @db.VarChar(100)
+  email        String   @unique @db.VarChar(150)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now()) @map("created_at")
+  trips        Trip[]
+
+  @@map("users")
+}
+
+model Destination {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(150)
+  address     String?  @db.VarChar(255)
+  latitude    Decimal? @db.Decimal(10, 7)
+  longitude   Decimal? @db.Decimal(10, 7)
+  description String?
+  imageUrl    String?  @map("image_url") @db.VarChar(500)
+  isFeatured  Boolean  @default(true) @map("is_featured")
+  createdAt   DateTime @default(now()) @map("created_at")
+  trips       Trip[]
+
+  @@map("destinations")
+}
+
+model Trip {
+  id            Int             @id @default(autoincrement())
+  userId        Int             @map("user_id")
+  destinationId Int?            @map("destination_id")
+  title         String          @db.VarChar(150)
+  destination   String          @db.VarChar(200)
+  address       String?         @db.VarChar(255)
+  latitude      Decimal?        @db.Decimal(10, 7)
+  longitude     Decimal?        @db.Decimal(10, 7)
+  startDate     DateTime        @map("start_date") @db.Date
+  endDate       DateTime        @map("end_date") @db.Date
+  budget        Decimal         @default(0) @db.Decimal(15, 2)
+  description   String?         @db.VarChar(1000)
+  coverImage    String?         @map("cover_image") @db.VarChar(500)
+  coverColor    String?         @default("purple") @map("cover_color") @db.VarChar(30)
+  isPublic      Boolean         @default(false) @map("is_public")
+  clonedFromId  Int?            @map("cloned_from_id")
+  aiItinerary   String?         @map("ai_itinerary")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destinationRef Destination?   @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+  clonedFrom    Trip?           @relation("TripClones", fields: [clonedFromId], references: [id], onDelete: SetNull)
+  clones        Trip[]          @relation("TripClones")
+  items         ItineraryItem[]
+  expenses      Expense[]
+
+  @@index([userId])
+  @@index([destinationId])
+  @@index([clonedFromId])
+  @@map("trips")
+}
+
+model ItineraryItem {
+  id           Int      @id @default(autoincrement())
+  tripId       Int      @map("trip_id")
+  activityDate DateTime @map("activity_date") @db.Date
+  startTime    DateTime @map("start_time") @db.Time(0)
+  endTime      DateTime @map("end_time") @db.Time(0)
+  activity     String   @db.VarChar(200)
+  location     String?  @db.VarChar(200)
+  note         String?  @db.VarChar(1000)
+  createdAt    DateTime @default(now()) @map("created_at")
+  trip         Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@map("itinerary_items")
+}
+
+model Expense {
+  id          Int             @id @default(autoincrement())
+  tripId      Int             @map("trip_id")
+  category    ExpenseCategory
+  description String          @db.VarChar(255)
+  amount      Decimal         @db.Decimal(15, 2)
+  expenseDate DateTime?       @map("expense_date") @db.Date
+  createdAt   DateTime        @default(now()) @map("created_at")
+  trip        Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@map("expenses")
+}

@@ -1,0 +1,42 @@
+# Render Blueprint: New > Blueprint > chọn repo này. Secret (sync: false) nhập trên trang Render, không commit.
+services:
+  - type: web
+    name: travelplan-api
+    runtime: node
+    rootDir: Backend
+    branch: main
+    plan: free
+    buildCommand: npm ci && npx prisma migrate deploy
+    startCommand: node src/server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  - type: web
+    name: travelplan-web
+    runtime: static
+    rootDir: frontend
+    branch: main
+    buildCommand: ""
+    staticPublishPath: .
+    autoDeploy: true

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập · Travelplan</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<!-- Screen 10: Đăng nhập (UC 2, TP-14) -->
+<body data-page="login">
+  <div class="auth-layout">
+    <aside class="auth-visual">
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">✦</span>travelplan</a>
+      <div class="auth-visual-body">
+        <h1>Chuyến đi đang chờ bạn.</h1>
+        <p>Đăng nhập để xem lịch trình từng ngày, quỹ chung và những chuyến bạn đã lưu.</p>
+      </div>
+      <div class="auth-credit">Ảnh: Đà Lạt, Lâm Đồng</div>
+    </aside>
+
+    <main class="auth-main">
+      <form class="auth-form" id="login-form" novalidate>
+        <h2>Đăng nhập</h2>
+        <p class="subtitle">Chào mừng bạn quay lại</p>
+
+        <!-- MSG 6, MSG 9 -->
+        <div class="alert alert-danger" id="form-error" role="alert" hidden></div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input class="input" type="email" id="email" name="email" autocomplete="email" placeholder="duong@gmail.com">
+        </div>
+
+        <div class="field">
+          <label for="password">Mật khẩu</label>
+          <div class="password-wrap">
+            <input class="input" type="password" id="password" name="password" autocomplete="current-password" placeholder="••••••••">
+            <button type="button" class="password-toggle" aria-label="Hiện mật khẩu" aria-pressed="false">👁</button>
+          </div>
+          <div class="caps-warning" hidden>⚠ Caps Lock đang bật</div>
+        </div>
+
+        <label class="check"><input type="checkbox" id="remember" checked> Ghi nhớ đăng nhập</label>
+
+        <button type="submit" class="btn btn-primary">Đăng nhập</button>
+
+        <div class="auth-links">
+          <a href="quen-mat-khau.html" id="forgot-link">Quên mật khẩu?</a>
+          <span>Chưa có tài khoản? <a href="dang-ky.html" id="register-link">Tạo tài khoản</a></span>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script type="module">
+    import { post, get } from './js/api.js';
+    import { pageUrl } from './js/config.js';
+    import { redirectIfLoggedIn, saveSession, updateUser, goAfterLogin } from './js/auth.js';
+    import { showFieldError, clearFieldError, applyServerErrors } from './js/ui.js';
+    import { msg } from './js/messages.js';
+    import { initPasswordFields } from './js/password.js';
+
+    // UC 2 · B2: đã đăng nhập thì sang Screen 5.
+    redirectIfLoggedIn();
+    initPasswordFields();
+
+    const form = document.getElementById('login-form');
+    const email = form.elements.email;
+    const password = form.elements.password;
+    const remember = document.getElementById('remember');
+    const formError = document.getElementById('form-error');
+    const submit = form.querySelector('[type="submit"]');
+
+    // Giữ tham số next khi sang Screen 11; mang email đã gõ sang Screen 12.
+    const query = new URLSearchParams(location.search);
+    // Từ MSG 7 ở Screen 11 sang: điền sẵn email.
+    if (query.get('email')) {
+      email.value = query.get('email');
+      query.delete('email');
+    }
+    if (query.toString()) document.getElementById('register-link').href = `${pageUrl('register')}?${query}`;
+    const forgot = document.getElementById('forgot-link');
+    forgot.addEventListener('click', () => {
+      forgot.href = pageUrl('forgotPassword', email.value.trim() ? { email: email.value.trim() } : undefined);
+    });
+
+    const showFormError = (text) => {
+      formError.textContent = text;
+      formError.hidden = false;
+    };
+
+    // UC 2 · BR 6: chỉ kiểm tra trống, sai định dạng email để server trả MSG 6.
+    const checks = [
+      [email, () => (email.value.trim() ? '' : msg('MSG 1'))],
+      [password, () => (password.value ? '' : msg('MSG 2'))],
+    ];
+    for (const [input, check] of checks) {
+      input.addEventListener('blur', () => (check() ? showFieldError(input, check()) : clearFieldError(input)));
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formError.hidden = true;
+      let first = null;
+      for (const [input, check] of checks) {
+        const error = check();
+        if (error) {
+          showFieldError(input, error);
+          first ||= input;
+        } else clearFieldError(input);
+      }
+      if (first) return first.focus();
+
+      submit.disabled = true;
+      try {
+        const res = await post('/auth/login', { email: email.value.trim(), password: password.value }, { auth: false });
+        // UC 2 · BR 9: lưu theo [Ghi nhớ đăng nhập], gọi /me lấy tên hiển thị, rồi về next hoặc Screen 5.
+        saveSession(res.token, res.user, { remember: remember.checked });
+        try {
+          updateUser(await get('/auth/me', { silent: true }));
+        } catch {
+          // Đã có user từ phản hồi đăng nhập, lỗi /me không chặn việc chuyển trang.
+        }
+        goAfterLogin();
+      } catch (err) {
+        if (err.status === 400 && applyServerErrors(form, err.errors)) return;
+        if (err.status === 401 || err.status === 429) {
+          showFormError(msg(err.code) || err.message);
+          if (err.status === 401) password.select();
+          return;
+        }
+        if (err.status && err.status < 500) showFormError(err.message);
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
