@@ -14,6 +14,16 @@ app.use(cors(env.corsOrigins.length ? { origin: env.corsOrigins } : undefined));
 app.use(express.json({ limit: '1mb' }));
 if (!env.isTest) app.use(morgan(env.isProd ? 'combined' : 'dev'));
 
+// Ảnh bìa tải lên (UC 17). Helmet mặc định chặn trang khác origin nhúng ảnh, nên mở riêng cho thư mục này.
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  },
+  express.static(env.uploadDir, { index: false, dotfiles: 'ignore' }),
+);
+
 app.use('/api', routes);
 
 app.use(notFound);
