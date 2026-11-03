@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import { env } from './config/env.js';
 import routes from './routes/index.js';
 import { notFound, errorHandler } from './middlewares/errorHandler.js';
+import itineraryRoute from './routes/itinerary.routes.js';
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json({ limit: '1mb' }));
 if (!env.isTest) app.use(morgan(env.isProd ? 'combined' : 'dev'));
 
 app.use('/api', routes);
+app.use('/api', itineraryRoute);
 
 app.use(notFound);
 app.use(errorHandler);
