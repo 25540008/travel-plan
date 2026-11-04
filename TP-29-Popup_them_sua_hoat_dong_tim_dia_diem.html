@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen 8 - Thêm hoạt động</title>
+    <style>
+        :root {
+            --ink: #10302E;
+            --pine: #2F6B5C;
+            --coral: #D9512C;
+            --bg: #F4F6F2;
+            --text-muted: #4A5E5B;
+            --border: #DCE3DF;
+        }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            background: #e0e0e0; 
+            margin: 0; padding: 20px; 
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; 
+        }
+        .modal-overlay { 
+            background: rgba(0,0,0,0.5); 
+            position: fixed; inset: 0; 
+            display: flex; justify-content: center; align-items: center; padding: 16px; 
+        }
+        .modal { 
+            background: #fff; width: 100%; max-width: 500px; 
+            border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+            display: flex; flex-direction: column; max-height: 90vh; 
+        }
+        .modal-header { 
+            padding: 20px; display: flex; justify-content: space-between; 
+            align-items: flex-start; border-bottom: 1px solid var(--border); 
+        }
+        .modal-header h2 { margin: 0; font-size: 20px; color: var(--ink); }
+        .modal-header p { margin: 4px 0 0; font-size: 14px; color: var(--text-muted); }
+        .close-btn { 
+            background: var(--bg); border: none; width: 32px; height: 32px; 
+            border-radius: 50%; cursor: pointer; font-size: 16px; color: var(--text-muted); 
+        }
+        .modal-body { padding: 20px; overflow-y: auto; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--ink); }
+        .form-control { 
+            width: 100%; padding: 12px; border: 1px solid var(--border); 
+            border-radius: 12px; font-size: 14px; box-sizing: border-box; 
+        }
+        .form-control:focus { outline: none; border-color: var(--pine); }
+        .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .chip { 
+            padding: 6px 12px; border-radius: 20px; background: var(--bg); 
+            border: 1px solid var(--border); cursor: pointer; font-size: 13px; color: var(--text-muted); 
+        }
+        .chip.active { background: var(--pine); color: #fff; border-color: var(--pine); }
+        .time-picker-row { display: flex; gap: 20px; margin-bottom: 8px; }
+        .time-col { flex: 1; }
+        .time-input { 
+            width: 100%; padding: 10px; border: 1px solid var(--border); 
+            border-radius: 12px; text-align: center; font-size: 16px; font-weight: 600; box-sizing: border-box;
+        }
+        .error-msg { color: #d32f2f; font-size: 12px; margin-top: 4px; display: none; }
+        .warning-banner { 
+            background: #FFF4E5; color: #663C00; padding: 12px; 
+            border-radius: 8px; font-size: 13px; margin-bottom: 20px; display: none; 
+        }
+        .modal-footer { 
+            padding: 20px; display: flex; justify-content: flex-end; gap: 12px; 
+            border-top: 1px solid var(--border); 
+        }
+        .btn { padding: 10px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
+        .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--ink); }
+        .btn-primary { background: var(--coral); color: #fff; }
+        
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+        .toast { 
+            background: var(--pine); color: white; padding: 12px 24px; 
+            border-radius: 8px; font-size: 14px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+        }
+    </style>
+</head>
+<body>
+    <div class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <h2>Thêm hoạt động</h2>
+                    <p>Ngày 2 · Thứ Bảy 24/10</p>
+                </div>
+                <button class="close-btn" id="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Tên hoạt động</label>
+                    <input type="text" id="activity-name" class="form-control" placeholder="Ví dụ: Cà phê Mê Linh" maxlength="200">
+                    <div id="name-error" class="error-msg">Vui lòng nhập Tên hoạt động. (MSG 29)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Giờ</label>
+                    <div class="chips" id="time-chips">
+                        <div class="chip" data-time="05:00">Sáng sớm</div>
+                        <div class="chip" data-time="07:00">Sáng</div>
+                        <div class="chip" data-time="11:00">Trưa</div>
+                        <div class="chip active" data-time="14:00">Chiều</div>
+                        <div class="chip" data-time="18:00">Tối</div>
+                    </div>
+                    
+                    <div class="time-picker-row">
+                        <div class="time-col">
+                            <label style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Bắt đầu</label>
+                            <input type="time" id="time-start" class="time-input" value="14:00">
+                        </div>
+                        <div class="time-col">
+                            <label style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Kết thúc</label>
+                            <input type="time" id="time-end" class="time-input" value="15:00">
+                        </div>
+                    </div>
+                    <div id="time-error" class="error-msg">Giờ kết thúc phải sau giờ bắt đầu. (MSG 8)</div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px;">
+                        <span style="font-size: 13px; color: var(--text-muted);">Thời lượng</span>
+                        <div class="chips" id="duration-chips" style="margin-bottom: 0;">
+                            <div class="chip" data-min="30">+30 phút</div>
+                            <div class="chip active" data-min="60">+1 giờ</div>
+                            <div class="chip" data-min="120">+2 giờ</div>
+                            <div class="chip" data-min="180">+3 giờ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="warning-banner" id="warning-conflict">
+                    ⚠️ Trùng giờ với Đồi chè Cầu Đất (14:00 - 16:00). Bạn vẫn lưu được nếu muốn.
+                </div>
+
+                <div class="time-picker-row">
+                    <div class="time-col form-group">
+                        <label>Địa điểm</label>
+                        <input type="text" class="form-control" placeholder="Tà Nung, Đà Lạt">
+                    </div>
+                    <div class="time-col form-group">
+                        <label>Ghi chú</label>
+                        <input type="text" class="form-control" placeholder="Không bắt buộc">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="btn-cancel">Hủy</button>
+                <button class="btn btn-outline" id="btn-save-continue">Lưu & thêm tiếp</button>
+                <button class="btn btn-primary" id="btn-save">Lưu hoạt động</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast-container"><div id="toast" class="toast">Đã thêm hoạt động. (MSG 21)</div></div>
+
+    <script>
+        const startTime = document.getElementById('time-start');
+        const endTime = document.getElementById('time-end');
+        const timeError = document.getElementById('time-error');
+        const nameInput = document.getElementById('activity-name');
+        const nameError = document.getElementById('name-error');
+        const warningConflict = document.getElementById('warning-conflict');
+        const toast = document.getElementById('toast');
+
+        // Logic tính toán giờ kết thúc dựa vào thời lượng
+        function setDuration(minutes) {
+            if (!startTime.value) return;
+            const [h, m] = startTime.value.split(':').map(Number);
+            let endDate = new Date();
+            endDate.setHours(h, m + minutes);
+            const endH = String(endDate.getHours()).padStart(2, '0');
+            const endM = String(endDate.getMinutes()).padStart(2, '0');
+            endTime.value = `${endH}:${endM}`;
+            validateTime();
+            checkConflict();
+        }
+
+        // Chọn khung giờ (BR 64)
+        document.querySelectorAll('#time-chips .chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                document.querySelectorAll('#time-chips .chip').forEach(c => c.classList.remove('active'));
+                e.target.classList.add('active');
+                startTime.value = e.target.dataset.time;
+                const activeDur = document.querySelector('#duration-chips .active');
+                if(activeDur) setDuration(Number(activeDur.dataset.min));
+            });
+        });
+
+        // Chọn thời lượng (BR 64)
+        document.querySelectorAll('#duration-chips .chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                document.querySelectorAll('#duration-chips .chip').forEach(c => c.classList.remove('active'));
+                e.target.classList.add('active');
+                setDuration(Number(e.target.dataset.min));
+            });
+        });
+
+        // Validation giờ kết thúc phải sau giờ bắt đầu (MSG 8)
+        function validateTime() {
+            if (!startTime.value || !endTime.value) return true;
+            if (endTime.value <= startTime.value) {
+                timeError.style.display = 'block';
+                return false;
+            } else {
+                timeError.style.display = 'none';
+                return true;
+            }
+        }
+
+        // Cảnh báo trùng giờ (CBR 7)
+        function checkConflict() {
+            if (startTime.value < '16:00' && endTime.value > '14:00') {
+                warningConflict.style.display = 'block';
+            } else {
+                warningConflict.style.display = 'none';
+            }
+        }
+
+        startTime.addEventListener('change', () => { validateTime(); checkConflict(); });
+        endTime.addEventListener('change', () => { validateTime(); checkConflict(); });
+
+        function showToast() {
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        function validateForm() {
+            let valid = true;
+            if (!nameInput.value.trim()) {
+                nameError.style.display = 'block';
+                nameInput.style.borderColor = '#d32f2f';
+                valid = false;
+            } else {
+                nameError.style.display = 'none';
+                nameInput.style.borderColor = 'var(--border)';
+            }
+            if (!validateTime()) valid = false;
+            return valid;
+        }
+
+        document.getElementById('btn-save').addEventListener('click', () => {
+            if (validateForm()) { showToast(); }
+        });
+
+        document.getElementById('btn-save-continue').addEventListener('click', () => {
+            if (validateForm()) {
+                showToast();
+                // BR 67: xóa tên, ghi chú, đặt Bắt đầu = Kết thúc vừa lưu
+                nameInput.value = '';
+                startTime.value = endTime.value;
+                const activeDur = document.querySelector('#duration-chips .active');
+                if(activeDur) setDuration(Number(activeDur.dataset.min));
+            }
+        });
+        
+        function handleCancel() {
+            if (nameInput.value && confirm("Bạn có muốn bỏ các thay đổi chưa lưu? (MSG 25)")) {
+                nameInput.value = ''; // Giả lập đóng modal
+            }
+        }
+        document.getElementById('btn-cancel').addEventListener('click', handleCancel);
+        document.getElementById('btn-close').addEventListener('click', handleCancel);
+    </script>
+</body>
+</html>
