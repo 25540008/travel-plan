@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chuyến đi của tôi · Travelplan</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/trips.css">
+</head>
+<body data-page="myTrips">
+  <div id="site-header"></div>
+
+  <main class="container section my-trips">
+    <div class="my-trips-head">
+      <div>
+        <h1>Chuyến đi của tôi</h1>
+        <p class="meta" id="greeting" aria-live="polite"></p>
+      </div>
+      <label class="search-box">
+        <span class="visually-hidden">Tìm chuyến</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input class="input" id="search" type="search" placeholder="Tìm theo tên hoặc điểm đến" autocomplete="off">
+      </label>
+    </div>
+
+    <div class="status-tabs" role="tablist" aria-label="Lọc theo trạng thái" id="tabs"></div>
+
+    <div id="trip-grid" class="trip-grid" aria-busy="true">
+      <div class="trip-card skeleton"></div><div class="trip-card skeleton"></div><div class="trip-card skeleton"></div>
+    </div>
+
+    <div id="empty" class="empty-state card" hidden>
+      <p></p>
+      <a class="btn btn-primary" data-link="createTrip">Tạo chuyến đi</a>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script type="module" src="js/layout.js"></script>
+  <script type="module" src="js/pages/chuyen-di-cua-toi.js"></script>
+</body>
+</html>
