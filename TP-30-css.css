@@ -1,0 +1,64 @@
+/* --- CSS CHO POPUP XÓA MSG 27 --- */
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: none; /* Mặc định ẩn */
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.delete-modal-overlay.active {
+  display: flex;
+}
+
+.delete-modal-container {
+  background: #ffffff;
+  padding: 20px 24px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 380px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.delete-modal-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.delete-modal-message {
+  font-size: 14px;
+  color: #4b5563;
+  margin-bottom: 20px;
+}
+
+.delete-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-delete-cancel, .btn-delete-confirm {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-weight: bold;
+}
+
+.btn-delete-cancel {
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  color: #374151;
+}
+
+.btn-delete-confirm {
+  background-color: #ef4444;
+  color: #ffffff;
+}
