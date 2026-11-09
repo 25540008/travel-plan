@@ -4,6 +4,8 @@ import healthRoutes from './health.routes.js';
 import authRoutes from './auth.routes.js';
 import exampleRoutes from './example.routes.js';
 import devRoutes from './dev.routes.js';
+import itineraryRoutes from './itinerary.routes.js';
+
 
 const router = Router();
 
@@ -12,6 +14,7 @@ router.use('/auth', authRoutes);
 
 // Gắn router của từng module tại đây, giữ đúng đường dẫn trong SRS mục 8.4, ví dụ:
 // router.use('/trips', tripRoutes);
+router.use('/', itineraryRoutes);
 
 if (!env.isProd) {
   router.use('/_example', exampleRoutes);
