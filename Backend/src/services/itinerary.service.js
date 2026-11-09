@@ -297,6 +297,6 @@ export async function getWeather(lat, lng, days = 7) {
   } catch (err) {
     const error = new Error('Weather service unavailable');
     error.status = 502;
-    throw error;
+    throw err;
   }
 }
