@@ -14,8 +14,7 @@ router.use('/auth', authRoutes);
 router.use('/trips/:id/cover', tripCoverRoutes);
 router.use('/trips', tripRoutes);
 
-// Gắn router của từng module tại đây, giữ đúng đường dẫn trong SRS mục 8.4, ví dụ:
-// router.use('/trips', tripRoutes);
+// Gắn router của từng module tại đây, giữ đúng đường dẫn trong SRS mục 8.4.
 
 if (!env.isProd) {
   router.use('/_example', exampleRoutes);

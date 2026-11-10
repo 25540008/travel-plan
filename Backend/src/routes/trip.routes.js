@@ -1,13 +1,14 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { auth } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
-import { z } from 'zod';
 import { requiredText, dateOnly, idParam } from '../utils/validators.js';
 import { MSG, required, tooLong } from '../utils/messages.js';
 import * as controller from '../controllers/trip.controller.js';
 
 const router = Router();
 
+// Message có dạng "<mã MSG>|<nội dung>" để middleware validate tách ra code và message.
 const m = (code, text) => `${code}|${text}`;
 const BAD_FORMAT = m('MSG 3', MSG['MSG 3']);
 const MAX_MONEY = 9_999_999_999_999; // cột Decimal(15, 2)

@@ -1,5 +1,7 @@
 import * as tripService from '../services/trip.service.js';
 
+// Controller đọc req.user / req.valid, gọi service, trả dữ liệu trực tiếp (không bọc { data }).
+
 export async function list(req, res) {
   res.json(await tripService.listMyTrips(req.user.id, req.valid.query));
 }
