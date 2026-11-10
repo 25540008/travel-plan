@@ -1,4 +1,3 @@
-// UC 13 Xem danh sách, UC 14 Tạo, UC 15 Sửa, UC 16 Xóa chuyến đi. Mọi route cần đăng nhập; chuyến không thuộc người dùng → 404 (CBR 8).
 import { Router } from 'express';
 import { z } from 'zod';
 import { auth } from '../middlewares/auth.js';
