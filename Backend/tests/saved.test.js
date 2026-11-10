@@ -5,7 +5,7 @@ import { signToken } from '../src/utils/jwt.js';
 
 describe('UC 12: Lưu / bỏ lưu (/api/me/saved) [TP-37]', () => {
   let user1, user2;
-  let token1, token2;
+  let token1;
   let publicTrip, privateTrip, destination;
 
   beforeAll(async () => {
@@ -31,7 +31,6 @@ describe('UC 12: Lưu / bỏ lưu (/api/me/saved) [TP-37]', () => {
     });
 
     token1 = signToken({ id: user1.id, role: user1.role });
-    token2 = signToken({ id: user2.id, role: user2.role });
 
     // 2. Tạo điểm đến test
     destination = await prisma.destination.create({
