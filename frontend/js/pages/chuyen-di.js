@@ -8,6 +8,7 @@ import { coverHtml } from '../cover.js';
 import { weatherIcon, loadWeather, findRainWarning, FORECAST_DAYS } from '../weather.js';
 import { deleteTrip } from '../trip-delete.js';
 import { showFlash } from '../ui.js';
+import { addBaseLayer } from '../geo.js';
 import {
   todayVN, tripDays, tripStatus, daysBetween, isoDate, minutesOf, findOverlaps, escapeHtml,
 } from '../trip-utils.js';
@@ -245,10 +246,7 @@ function renderMap(items) {
   }
   if (!map) {
     map = window.L.map('map', { scrollWheelZoom: false, attributionControl: true });
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '© OpenStreetMap',
-    }).addTo(map);
+    addBaseLayer(map);
   }
   mapLayer?.remove();
   mapLayer = window.L.layerGroup().addTo(map);

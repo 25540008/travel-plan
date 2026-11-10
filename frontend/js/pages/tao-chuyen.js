@@ -1,6 +1,6 @@
 // Screen 6 Tạo / sửa chuyến đi (UC 14, UC 15).
 // Tạo: POST /trips → MSG 22 trên Screen 7. Sửa (?id= hoặc ?edit=): PUT /trips/:id → MSG 23 nếu có hoạt động ra ngoài ngày mới.
-// Điểm đến gợi ý từ Nominatim (≥ 2 ký tự, tối đa 5). Hủy / rời trang khi đã sửa → MSG 25.
+// Điểm đến gợi ý từ Nominatim, dự phòng Photon (≥ 2 ký tự, tối đa 5). Hủy / rời trang khi đã sửa → MSG 25.
 import { pageUrl } from '../config.js';
 import { get, post, put } from '../api.js';
 import { requireLogin } from '../auth.js';
@@ -8,6 +8,7 @@ import { msg } from '../messages.js';
 import { formatDuration, formatMoney, formatDayMonth, toDate } from '../format.js';
 import { coverHtml } from '../cover.js';
 import { tripStatus, isoDate, todayVN, escapeHtml } from '../trip-utils.js';
+import { searchPlaces, addBaseLayer } from '../geo.js';
 import {
   toast, confirmDialog, validateInput, showFieldError, clearFieldError, applyServerErrors, setFlash,
 } from '../ui.js';
@@ -193,13 +194,11 @@ function shortName(r) {
   return a.city || a.town || a.village || a.state || a.county || r.name || r.display_name.split(',')[0];
 }
 
-async function searchPlaces(q) {
+async function showPlaces(q) {
   placeAbort?.abort();
   placeAbort = new AbortController();
-  const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=vn&accept-language=vi&q=${encodeURIComponent(q)}`;
   try {
-    const res = await fetch(url, { signal: placeAbort.signal, headers: { Accept: 'application/json' } });
-    placeResults = res.ok ? (await res.json()).slice(0, 5) : [];
+    placeResults = await searchPlaces(q, { signal: placeAbort.signal, details: true });
   } catch (err) {
     if (err.name === 'AbortError') return;
     placeResults = [];
@@ -219,7 +218,7 @@ placeInput.addEventListener('input', () => {
   clearTimeout(placeTimer);
   const q = placeInput.value.trim();
   if (q.length < 2) return closePlaces();
-  placeTimer = setTimeout(() => searchPlaces(q), 350);
+  placeTimer = setTimeout(() => showPlaces(q), 350);
 });
 
 placeInput.addEventListener('keydown', (e) => {
@@ -270,7 +269,7 @@ function setPlace(place) {
   if (!window.L) return;
   if (!pinMap) {
     pinMap = L.map('place-map', { scrollWheelZoom: false }).setView([lat, lng], 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(pinMap);
+    addBaseLayer(pinMap);
     pinMarker = L.marker([lat, lng]).addTo(pinMap);
   } else {
     pinMap.setView([lat, lng], 11);

@@ -12,6 +12,7 @@ import { toast, confirmDialog, showFieldError, clearFieldError, validateInput } 
 import { COVER_COLORS, coverColorValue } from './cover.js';
 import { escapeHtml, minutesOf } from './trip-utils.js';
 import { toDate, formatTime } from './format.js';
+import { searchPlaces } from './geo.js';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const WEEKDAY = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
@@ -510,7 +511,7 @@ function bindPlaceSearch(input, list, trip, onPick = () => {}) {
   const hide = () => (list.hidden = true);
   const lat = Number(trip.latitude);
   const lng = Number(trip.longitude);
-  const near = trip.latitude != null && trip.longitude != null ? `&viewbox=${lng - 0.5},${lat + 0.5},${lng + 0.5},${lat - 0.5}` : '';
+  const near = trip.latitude != null && trip.longitude != null ? { lat, lng } : null;
   const nameOf = (r) => r.name || r.display_name.split(',')[0];
 
   input.addEventListener('input', () => {
@@ -522,11 +523,7 @@ function bindPlaceSearch(input, list, trip, onPick = () => {}) {
       ctrl?.abort();
       ctrl = new AbortController();
       try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=vn&accept-language=vi${near}&q=${encodeURIComponent(q)}`,
-          { signal: ctrl.signal },
-        );
-        results = res.ok ? (await res.json()).slice(0, 5) : [];
+        results = await searchPlaces(q, { near, signal: ctrl.signal });
       } catch (err) {
         if (err.name === 'AbortError') return;
         results = [];
