@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import { env } from './config/env.js';
 import routes from './routes/index.js';
 import { notFound, errorHandler } from './middlewares/errorHandler.js';
+import itineraryRoute from './routes/itinerary.routes.js';
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(
 );
 
 app.use('/api', routes);
+app.use('/api', itineraryRoute);
 
 app.use(notFound);
 app.use(errorHandler);
