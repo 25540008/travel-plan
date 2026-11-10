@@ -7,6 +7,7 @@ import tripCoverRoutes from './tripCover.routes.js';
 import exampleRoutes from './example.routes.js';
 import devRoutes from './dev.routes.js';
 import itineraryRoutes from './itinerary.routes.js';
+import * as cloneController from '../controllers/clone.controller.js';
 
 
 const router = Router();
@@ -15,6 +16,7 @@ router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
 router.use('/trips/:id/cover', tripCoverRoutes);
 router.use('/trips', tripRoutes);
+router.get('/public/trending-destinations', cloneController.getTrendingDestinations)
 
 // Gắn router của từng module tại đây, giữ đúng đường dẫn trong SRS mục 8.4, ví dụ:
 // router.use('/trips', tripRoutes);
