@@ -100,9 +100,17 @@ describe('Kiểm thử API chuyến đi /api/trips/:id (TP-21 / UC 18)', () => {
       const res = await request(app)
         .put(`/api/trips/${tripUserA.id}`)
         .set('Authorization', `Bearer ${tokenUserA}`)
-        .send({ public_trip: true });
+        .send({
+          title: tripUserA.title,
+          destination: tripUserA.destination,
+          startDate: '2026-12-01',
+          endDate: '2026-12-05',
+          budget: 5000000,
+          isPublic: true,
+        });
 
       expect(res.status).toBe(200);
+      expect(res.body.isPublic).toBe(true);
     });
 
     it('CBR 2: Báo lỗi 400 nếu ngân sách <= 0 (MSG 33)', async () => {
