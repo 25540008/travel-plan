@@ -13,6 +13,7 @@ export const PAGES = {
   myTrips: 'chuyen-di-cua-toi.html',     // Screen 5
   createTrip: 'tao-chuyen.html',         // Screen 6
   trip: 'chuyen-di.html',                // Screen 7, 9 (?id=)
+  share: 'chia-se.html',                 // Link chia sẻ công khai (UC 18, ?id=)
   login: 'dang-nhap.html',               // Screen 10
   register: 'dang-ky.html',              // Screen 11
   forgotPassword: 'quen-mat-khau.html',  // Screen 12

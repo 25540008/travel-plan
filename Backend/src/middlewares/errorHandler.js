@@ -11,6 +11,8 @@ function normalize(err) {
   if (err.type === 'entity.parse.failed') return AppError.badRequest('MSG 3');
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     if (err.code === 'P2025') return AppError.notFound();
+    // Khoá ngoại không tồn tại (ví dụ destinationId sai) → lỗi định dạng, không phải 500.
+    if (err.code === 'P2003') return AppError.badRequest('MSG 3');
     if (err.code === 'P2002') return new AppError(409, 'CONFLICT', 'Dữ liệu đã tồn tại.');
   }
   return null;

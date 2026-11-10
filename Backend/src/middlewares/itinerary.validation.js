@@ -13,8 +13,8 @@ const itemParamsSchema = z.object({
 // GET /api/public/weather?lat=&lng=&days=
 export const weatherSchema = {
   query: z.object({
-    lat: z.coerce.number({ invalid_type_error: 'MSG 3|Giá trị vĩ độ không đúng định dạng.' }),
-    lng: z.coerce.number({ invalid_type_error: 'MSG 3|Giá trị kinh độ không đúng định dạng.' }),
+    lat: z.coerce.number({ error: 'MSG 3|Giá trị vĩ độ không đúng định dạng.' }),
+    lng: z.coerce.number({ error: 'MSG 3|Giá trị kinh độ không đúng định dạng.' }),
     days: z.coerce.number().int().positive().default(7),
   }),
 };
@@ -33,21 +33,24 @@ export const createItinerarySchema = {
   body: z
     .object({
       activityDate: z
-        .string({ required_error: 'MSG 29|Vui lòng chọn ngày hoạt động.' })
+        .string({ error: 'MSG 29|Vui lòng chọn ngày hoạt động.' })
         .regex(/^\d{4}-\d{2}-\d{2}$/, 'MSG 3|Giá trị ngày không đúng định dạng.'),
       activity: z
-        .string({ required_error: 'MSG 29|Vui lòng nhập tên hoạt động.' })
+        .string({ error: 'MSG 29|Vui lòng nhập tên hoạt động.' })
         .trim()
         .min(1, 'MSG 29|Vui lòng nhập tên hoạt động.')
         .max(200, 'MSG 30|Tên hoạt động tối đa 200 ký tự.'),
       startTime: z
-        .string({ required_error: 'MSG 29|Vui lòng chọn giờ bắt đầu.' })
+        .string({ error: 'MSG 29|Vui lòng chọn giờ bắt đầu.' })
         .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'MSG 3|Giờ bắt đầu không đúng định dạng HH:mm.'),
       endTime: z
-        .string({ required_error: 'MSG 29|Vui lòng chọn giờ kết thúc.' })
+        .string({ error: 'MSG 29|Vui lòng chọn giờ kết thúc.' })
         .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'MSG 3|Giờ kết thúc không đúng định dạng HH:mm.'),
       location: z.string().trim().max(200, 'MSG 30|Địa điểm tối đa 200 ký tự.').optional().nullable(),
       note: z.string().trim().max(1000, 'MSG 30|Ghi chú tối đa 1000 ký tự.').optional().nullable(),
+      // Toạ độ địa điểm chọn từ gợi ý Nominatim (để ghim trên bản đồ ngày); null = bỏ ghim.
+      latitude: z.number({ error: 'MSG 3|Vĩ độ không đúng định dạng.' }).min(-90, 'MSG 3|Vĩ độ không đúng định dạng.').max(90, 'MSG 3|Vĩ độ không đúng định dạng.').optional().nullable(),
+      longitude: z.number({ error: 'MSG 3|Kinh độ không đúng định dạng.' }).min(-180, 'MSG 3|Kinh độ không đúng định dạng.').max(180, 'MSG 3|Kinh độ không đúng định dạng.').optional().nullable(),
     })
     .refine((data) => data.endTime > data.startTime, {
       message: 'MSG 8|Giờ kết thúc phải sau giờ bắt đầu.',
@@ -71,6 +74,9 @@ export const updateItinerarySchema = {
       endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'MSG 3|Giờ kết thúc không đúng định dạng HH:mm.').optional(),
       location: z.string().trim().max(200, 'MSG 30|Địa điểm tối đa 200 ký tự.').optional().nullable(),
       note: z.string().trim().max(1000, 'MSG 30|Ghi chú tối đa 1000 ký tự.').optional().nullable(),
+      // Toạ độ địa điểm chọn từ gợi ý Nominatim (để ghim trên bản đồ ngày); null = bỏ ghim.
+      latitude: z.number({ error: 'MSG 3|Vĩ độ không đúng định dạng.' }).min(-90, 'MSG 3|Vĩ độ không đúng định dạng.').max(90, 'MSG 3|Vĩ độ không đúng định dạng.').optional().nullable(),
+      longitude: z.number({ error: 'MSG 3|Kinh độ không đúng định dạng.' }).min(-180, 'MSG 3|Kinh độ không đúng định dạng.').max(180, 'MSG 3|Kinh độ không đúng định dạng.').optional().nullable(),
     })
     .refine(
       (data) => {

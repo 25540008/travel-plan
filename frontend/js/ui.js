@@ -158,3 +158,26 @@ export function applyServerErrors(form, errors = []) {
 export function formData(form) {
   return Object.fromEntries([...new FormData(form)].map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]));
 }
+
+/* ---------- Thông báo sau khi chuyển trang (ví dụ MSG 22 hiện trên Screen 7 sau khi lưu ở Screen 6) ---------- */
+const FLASH_KEY = 'tp_flash_next';
+
+export function setFlash(text, type = 'success') {
+  try {
+    sessionStorage.setItem(FLASH_KEY, JSON.stringify({ text, type }));
+  } catch {
+    /* bỏ qua: trình duyệt chặn sessionStorage */
+  }
+}
+
+export function showFlash() {
+  try {
+    const raw = sessionStorage.getItem(FLASH_KEY);
+    if (!raw) return;
+    sessionStorage.removeItem(FLASH_KEY);
+    const { text, type } = JSON.parse(raw);
+    toast(text, type);
+  } catch {
+    /* bỏ qua */
+  }
+}

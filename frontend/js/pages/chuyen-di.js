@@ -7,6 +7,7 @@ import { toDate, formatTime, formatDuration } from '../format.js';
 import { coverHtml } from '../cover.js';
 import { weatherIcon, loadWeather, findRainWarning, FORECAST_DAYS } from '../weather.js';
 import { deleteTrip } from '../trip-delete.js';
+import { showFlash } from '../ui.js';
 import {
   todayVN, tripDays, tripStatus, daysBetween, isoDate, minutesOf, findOverlaps, escapeHtml,
 } from '../trip-utils.js';
@@ -371,7 +372,9 @@ function showNotFound(text) {
 
 async function loadItems() {
   if (Array.isArray(state.trip.items)) return state.trip.items;
-  return (await get(`/trips/${tripId}/itinerary`)) || [];
+  // API trả { items: [...] } (TP-26); vẫn nhận mảng trần cho chắc.
+  const data = await get(`/trips/${tripId}/itinerary`);
+  return Array.isArray(data) ? data : data?.items || [];
 }
 
 async function load({ keepDay = false } = {}) {
@@ -408,4 +411,7 @@ async function load({ keepDay = false } = {}) {
 document.addEventListener('trip:reload', () => load({ keepDay: true }));
 
 if (!tripId) showNotFound('Không tìm thấy chuyến đi.');
-else if (requireLogin()) load();
+else if (requireLogin()) {
+  showFlash(); // MSG 22 / MSG 23 / MSG 34 sau khi lưu ở Screen 6
+  load();
+}

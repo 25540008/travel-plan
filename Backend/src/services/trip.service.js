@@ -1,5 +1,7 @@
 import prisma from '../lib/prisma.js';
 import { getOwnedTripOrThrow } from './tripAccess.service.js';
+import { AppError } from '../utils/AppError.js';
+import { MSG } from '../utils/messages.js';
 import { normalizeText, toDateStr, toTripView } from '../utils/tripView.js';
 
 // Service chỉ làm việc với dữ liệu (Prisma), không đụng tới req/res.
@@ -49,12 +51,19 @@ export async function getMyTrip(userId, tripId) {
 }
 
 /**
- * UC 15: sửa chuyến. Trường không gửi thì giữ nguyên; description, address, latitude, longitude gửi null để xoá.
+ * UC 15, UC 18: sửa chuyến (nhận một phần). Trường không gửi thì giữ nguyên; description, address, latitude, longitude gửi null để xoá.
  * Khi đổi ngày, hoạt động nằm ngoài khoảng ngày mới KHÔNG bị xoá (hiển thị ở nhóm "Ngoài lịch"),
  * và outOfRangeCount cho frontend hiện MSG 23.
  */
 export async function updateTrip(userId, tripId, data) {
   const current = await getOwnedTripOrThrow(userId, tripId);
+  // CBR 2: chỉ gửi một trong hai ngày thì so với ngày còn lại đang lưu.
+  const nextStart = toDateStr(data.startDate ?? current.startDate);
+  const nextEnd = toDateStr(data.endDate ?? current.endDate);
+  if (nextEnd < nextStart) {
+    const field = data.endDate ? 'endDate' : 'startDate';
+    throw AppError.badRequest('MSG 32', MSG['MSG 32'], [{ field, code: 'MSG 32', message: MSG['MSG 32'] }]);
+  }
   const updated = await prisma.trip.update({ where: { id: current.id }, data: withoutUndefined(data) });
 
   const datesChanged = toDateStr(current.startDate) !== toDateStr(updated.startDate) || toDateStr(current.endDate) !== toDateStr(updated.endDate);
@@ -78,3 +87,48 @@ function withoutUndefined(obj) {
   return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 }
 
+const hhmm = (d) => d.toISOString().slice(11, 16);
+
+/**
+ * UC 18: xem chuyến qua link chia sẻ, không cần đăng nhập. Chỉ chuyến đang công khai; còn lại trả 404.
+ * Khoản chi không bao giờ công khai: chỉ trả ngân sách dự kiến, không có spent / expenseCount / trạng thái ngân sách.
+ */
+export async function getPublicTrip(tripId) {
+  const trip = await prisma.trip.findFirst({
+    where: { id: tripId, isPublic: true },
+    include: {
+      user: { select: { fullName: true } },
+      items: { orderBy: [{ activityDate: 'asc' }, { startTime: 'asc' }] },
+    },
+  });
+  if (!trip) throw AppError.notFound();
+  const view = toTripView(trip, { itemCount: trip.items.length });
+  return {
+    id: view.id,
+    title: view.title,
+    description: view.description,
+    destination: view.destination,
+    address: view.address,
+    latitude: view.latitude,
+    longitude: view.longitude,
+    startDate: view.startDate,
+    endDate: view.endDate,
+    totalDays: view.totalDays,
+    budget: view.budget,
+    coverImage: view.coverImage,
+    coverColor: view.coverColor,
+    itemCount: view.itemCount,
+    ownerName: trip.user.fullName,
+    items: trip.items.map((it) => ({
+      id: it.id,
+      activityDate: toDateStr(it.activityDate),
+      startTime: hhmm(it.startTime),
+      endTime: hhmm(it.endTime),
+      activity: it.activity,
+      location: it.location,
+      note: it.note,
+      latitude: it.latitude == null ? null : Number(it.latitude),
+      longitude: it.longitude == null ? null : Number(it.longitude),
+    })),
+  };
+}
