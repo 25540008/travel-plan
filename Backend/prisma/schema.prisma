@@ -32,6 +32,7 @@ model User {
   passwordHash String   @map("password_hash") @db.VarChar(255)
   role         Role     @default(USER)
   createdAt    DateTime @default(now()) @map("created_at")
+  savedItems   SavedItem[]
   trips        Trip[]
 
   @@map("users")
