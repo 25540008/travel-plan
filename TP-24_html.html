@@ -1,0 +1,28 @@
+<!-- Popup Đổi Ảnh Bìa (UC 17) -->
+<div id="cover-modal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Đổi ảnh bìa</h3>
+    <!-- Các lựa chọn: Tải ảnh, Chọn màu, Dán link -->
+    <input type="file" id="cover-upload" accept=".jpg, .jpeg, .png, .webp" />
+    <p id="cover-error" class="error-text hidden"></p> <!-- Dành cho MSG 16 -->
+    <button id="save-cover-btn" class="btn-primary">Lưu</button>
+  </div>
+</div>
+
+<!-- Popup Chia Sẻ Công Khai (UC 18) -->
+<div id="share-modal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Chia sẻ chuyến đi</h3>
+    <label class="toggle-switch">
+      <input type="checkbox" id="public-toggle" />
+      <span class="slider"></span> Công khai lịch trình
+    </label>
+    <div class="link-container">
+      <input type="text" id="share-link-input" readonly />
+      <button id="copy-link-btn" disabled>Chép link</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Thông báo (Dùng chung cho MSG 17) -->
+<div id="toast-container" class="toast-container"></div>
