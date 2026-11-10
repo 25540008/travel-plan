@@ -3,8 +3,6 @@ import * as tripController from '../controllers/trip.controller.js';
 import { auth } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import { z } from 'zod';
-import { cloneTripSchema } from '../middlewares/clone.validation.js';
-import * as cloneController from '../controllers/clone.controller.js';
 
 const router = Router();
 
@@ -50,8 +48,5 @@ router.put('/:id', auth, validate(updateTripSchema), tripController.updateTrip);
 
 // DELETE /api/trips/:id
 router.delete('/:id', auth, validate(tripIdParamSchema), tripController.deleteTrip);
-
-// POST /api/trips/:id/clone (UC 11)
-router.post('/:id/clone', auth, validate(cloneTripSchema), cloneController.cloneTrip);
 
 export default router;
