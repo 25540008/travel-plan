@@ -45,6 +45,9 @@ function formatTimeString(dateObj) {
   return `${hours}:${minutes}`;
 }
 
+/** Decimal (Prisma) → số, hoặc null khi chưa có toạ độ. */
+const toCoord = (v) => (v == null ? null : Number(v));
+
 function parseId(id) {
   if (!id || id === 'undefined' || isNaN(Number(id))) {
     throw AppError.notFound();
@@ -113,6 +116,8 @@ export async function getTripItinerary(tripId, userId, queryDate) {
     activity: item.activity,
     location: item.location,
     note: item.note,
+    latitude: toCoord(item.latitude),
+    longitude: toCoord(item.longitude),
     createdAt: item.createdAt,
   }));
 
@@ -147,6 +152,8 @@ export async function addItineraryItem(tripId, userId, data) {
       activity: data.activity,
       location: data.location ?? null,
       note: data.note ?? null,
+      latitude: data.latitude ?? null,
+      longitude: data.longitude ?? null,
     },
   });
 
@@ -177,6 +184,8 @@ export async function addItineraryItem(tripId, userId, data) {
     activity: newItem.activity,
     location: newItem.location,
     note: newItem.note,
+    latitude: toCoord(newItem.latitude),
+    longitude: toCoord(newItem.longitude),
     messageCode: 'MSG 21',
     warning:
       overlappingWith.length > 0
@@ -212,6 +221,8 @@ export async function updateItineraryItem(tripId, itemId, userId, updateData) {
   if (updateData.activity !== undefined) payload.activity = updateData.activity;
   if (updateData.location !== undefined) payload.location = updateData.location;
   if (updateData.note !== undefined) payload.note = updateData.note;
+  if (updateData.latitude !== undefined) payload.latitude = updateData.latitude;
+  if (updateData.longitude !== undefined) payload.longitude = updateData.longitude;
 
   const updated = await prisma.itineraryItem.update({
     where: { id: itId },
@@ -227,6 +238,8 @@ export async function updateItineraryItem(tripId, itemId, userId, updateData) {
     activity: updated.activity,
     location: updated.location,
     note: updated.note,
+    latitude: toCoord(updated.latitude),
+    longitude: toCoord(updated.longitude),
     messageCode: 'MSG 34',
   };
 }

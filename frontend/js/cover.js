@@ -65,6 +65,27 @@ export function coverImageUrl(path) {
 export function coverHtml(trip, className = 'cover') {
   const url = coverImageUrl(trip.coverImage);
   if (url) return `<img class="${className}" src="${escapeHtml(url)}" alt="">`;
+  // Màu bìa người dùng chọn (UC 17). "purple" là giá trị mặc định của DB nên vẫn hiện cảnh minh hoạ.
+  const color = coverColorValue(trip.coverColor);
+  if (color) return `<div class="${className} cover-color" style="background:${color}" aria-hidden="true"></div>`;
   const scene = sceneOf(trip.destination);
   return `<svg class="${className}" viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${SVG[scene]}</svg>`;
+}
+
+/** Bảng màu bìa trong popup Ảnh bìa (UC 17). Lưu tên màu, hoặc mã #RRGGBB. */
+export const COVER_COLORS = {
+  pine: '#2f6b5c',
+  ink: '#10302e',
+  coral: '#d9512c',
+  sun: '#f2c25b',
+  lake: '#3c7fa0',
+  plum: '#6b4c8a',
+  sand: '#e8c9a0',
+  rose: '#e58a9a',
+};
+
+export function coverColorValue(color) {
+  if (!color || color === 'purple') return null;
+  if (/^#[0-9a-f]{6}$/i.test(color)) return color;
+  return COVER_COLORS[color] || null;
 }
