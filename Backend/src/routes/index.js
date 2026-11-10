@@ -7,6 +7,7 @@ import tripCoverRoutes from './tripCover.routes.js';
 import exampleRoutes from './example.routes.js';
 import devRoutes from './dev.routes.js';
 import itineraryRoutes from './itinerary.routes.js';
+import savedRoutes from './saved.routes.js';
 
 
 const router = Router();
@@ -19,6 +20,7 @@ router.use('/trips', tripRoutes);
 // Gắn router của từng module tại đây, giữ đúng đường dẫn trong SRS mục 8.4, ví dụ:
 // router.use('/trips', tripRoutes);
 router.use('/', itineraryRoutes);
+router.use('/me/saved', savedRoutes);
 
 if (!env.isProd) {
   router.use('/_example', exampleRoutes);
