@@ -134,3 +134,5 @@ textarea.input { height: auto; min-height: 96px; padding: var(--space-3) var(--s
   .toast-region { left: var(--space-4); right: var(--space-4); }
   .toast { min-width: 0; }
 }
+
+.hidden, [hidden] { display: none !important; }
