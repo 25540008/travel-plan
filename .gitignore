@@ -1,3 +1,38 @@
+# Hệ điều hành
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# Thư viện cài từ npm (cài lại bằng npm ci)
 node_modules/
+
+# Biến môi trường: chứa mật khẩu DB, JWT_SECRET, API key. Chỉ commit file mẫu .env.example
 .env
+.env.*
+!.env.example
+
+# Editor / IDE (cài đặt riêng của từng người)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Log và file tạm
+*.log
+npm-debug.log*
+logs/
+tmp/
+.cache/
+
+# Kết quả test, build
+coverage/
+dist/
+build/
+
+# Ảnh bìa người dùng tải lên khi chạy local (UC 17)
+uploads/
+
+# Thư mục do công cụ test trình duyệt (Playwright) tạo ra
+.playwright-mcp/
+playwright-report/
+test-results/

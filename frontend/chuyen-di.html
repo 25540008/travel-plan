@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lịch trình chuyến · Travelplan</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="css/trip.css">
+  <link rel="stylesheet" href="css/trip-form.css">
+</head>
+<!-- Screen 7 Lịch trình chuyến (UC 19) + nút Xóa chuyến (UC 16). Tab Ngân sách là Screen 9 (TP-34).
+     Các nút do thẻ khác làm phát sự kiện trên document để thẻ đó tự bắt:
+       trip:cover (TP-24), trip:share (TP-24), trip:add-item (TP-29), trip:edit-item (TP-29), trip:delete-item (TP-30), trip:add-spot (TP-47)
+     detail của sự kiện: { trip, item?, date? }. Sau khi lưu xong, gọi document.dispatchEvent(new Event('trip:reload')) để trang tải lại. -->
+<body data-page="myTrips">
+  <div id="site-header"></div>
+
+  <main class="trip-page" aria-busy="true">
+    <div class="trip-hero" id="hero">
+      <button type="button" class="btn btn-secondary btn-sm hero-cover-btn" data-action="cover">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 8"/></svg>Ảnh bìa
+      </button>
+    </div>
+
+    <div class="container">
+      <section class="card card-float trip-head" id="trip-head">
+        <div class="trip-head-top">
+          <div>
+            <p class="trip-head-chips" id="chips"></p>
+            <h1 id="trip-title">&nbsp;</h1>
+            <p class="meta" id="trip-meta"></p>
+          </div>
+          <div class="trip-head-actions">
+            <a class="btn btn-secondary btn-sm" id="edit-link">Sửa chuyến</a>
+            <button type="button" class="btn btn-secondary btn-sm" data-action="share">Chia sẻ</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-icon-danger" data-action="delete" aria-label="Xóa chuyến">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="trip-tabs" role="tablist">
+          <button type="button" role="tab" class="trip-tab" data-tab="itinerary" aria-selected="true" aria-controls="panel-itinerary">Lịch trình</button>
+          <button type="button" role="tab" class="trip-tab" data-tab="budget" aria-selected="false" aria-controls="panel-budget">Ngân sách</button>
+        </div>
+      </section>
+
+      <div id="not-found" class="card empty-box" hidden>
+        <p></p>
+        <a class="btn btn-primary" data-link="myTrips">Về Chuyến đi của tôi</a>
+      </div>
+
+      <section id="panel-itinerary" class="itinerary" role="tabpanel">
+        <nav class="day-list" id="day-list" aria-label="Chọn ngày"></nav>
+
+        <section class="card day-panel">
+          <div class="day-panel-head">
+            <div>
+              <h2 id="day-title"></h2>
+              <p class="meta" id="day-meta"></p>
+            </div>
+            <button type="button" class="btn btn-primary" data-action="add-item">+ Thêm hoạt động</button>
+          </div>
+
+          <div class="weather-box" id="weather-box" hidden>
+            <div class="rain-alert" id="rain-alert" hidden></div>
+            <ol class="hourly" id="hourly"></ol>
+          </div>
+
+          <ol class="timeline" id="timeline"></ol>
+        </section>
+
+        <aside class="trip-side">
+          <section class="card map-card">
+            <div id="map" class="map" role="img" aria-label="Bản đồ hoạt động trong ngày"></div>
+            <div class="map-foot">
+              <span class="meta" id="map-distance"></span>
+              <a class="link" id="gmaps-link" target="_blank" rel="noopener">Mở Google Maps</a>
+            </div>
+          </section>
+          <!-- Gợi ý gần đây: cần API địa điểm của điểm đến (TP-42, TP-43). Ẩn khi chưa có dữ liệu. -->
+          <section class="card nearby" id="nearby" hidden>
+            <h3>Gợi ý gần đây</h3>
+            <ul id="nearby-list"></ul>
+          </section>
+        </aside>
+      </section>
+
+      <!-- Screen 9 Ngân sách: làm ở TP-34, gắn vào phần tử này. -->
+      <section id="panel-budget" class="card" role="tabpanel" hidden>
+        <p class="meta">Màn hình Ngân sách đang được làm (TP-34).</p>
+      </section>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script type="module" src="js/layout.js"></script>
+  <script type="module" src="js/pages/chuyen-di.js"></script>
+  <script type="module" src="js/trip-actions.js"></script>
+</body>
+</html>
