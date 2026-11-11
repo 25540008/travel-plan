@@ -6,6 +6,7 @@ import { requiredText, dateOnly, idParam } from '../utils/validators.js';
 import { MSG, required, tooLong } from '../utils/messages.js';
 import * as controller from '../controllers/trip.controller.js';
 import * as cloneController from '../controllers/clone.controller.js';
+import { cloneTripSchema } from '../middlewares/clone.validation.js';
 
 const router = Router();
 
