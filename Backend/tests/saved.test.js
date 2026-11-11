@@ -5,6 +5,7 @@ import { signToken } from '../src/utils/jwt.js';
 
 describe('UC 12: Lưu / bỏ lưu (/api/me/saved) [TP-37]', () => {
   let user1, user2;
+  // eslint-disable-next-line no-unused-vars
   let token1, token2;
   let publicTrip, privateTrip, destination;
 
