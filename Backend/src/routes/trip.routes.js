@@ -5,6 +5,7 @@ import { validate } from '../middlewares/validate.js';
 import { requiredText, dateOnly, idParam } from '../utils/validators.js';
 import { MSG, required, tooLong } from '../utils/messages.js';
 import * as controller from '../controllers/trip.controller.js';
+import * as cloneController from '../controllers/clone.controller.js';
 
 const router = Router();
 
@@ -139,5 +140,5 @@ router.post('/', validate({ body: tripBody }), controller.create);
 router.get('/:id', validate({ params: idParams }), controller.detail);
 router.put('/:id', acceptLegacyKeys, validate({ params: idParams, body: tripPatchBody }), controller.update);
 router.delete('/:id', validate({ params: idParams }), controller.remove);
-
+router.post('/:id/clone', auth, validate(cloneTripSchema), cloneController.cloneTrip);
 export default router;
