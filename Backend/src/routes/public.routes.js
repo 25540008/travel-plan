@@ -14,6 +14,6 @@ router.get('/trips/:id', validate({ params: z.object({ id: idParam }) }), async 
 });
 
 // GET /api/public/trending-destinations
-router.get('/public/trending-destinations', cloneController.getTrendingDestinations)
+router.get('/trending-destinations', cloneController.getTrendingDestinations)
 
 export default router;
