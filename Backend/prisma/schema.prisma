@@ -33,6 +33,7 @@ model User {
   role         Role     @default(USER)
   createdAt    DateTime @default(now()) @map("created_at")
   trips        Trip[]
+  savedItems   SavedItem[]
 
   @@map("users")
 }
@@ -115,4 +116,23 @@ model Expense {
 
   @@index([tripId])
   @@map("expenses")
+}
+
+enum SavedItemType {
+  TRIP
+  DESTINATION
+}
+
+model SavedItem {
+  id        Int           @id @default(autoincrement())
+  userId    Int           @map("user_id")
+  itemType  SavedItemType @map("item_type")
+  itemId    Int           @map("item_id")
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemType, itemId])
+  @@index([userId])
+  @@map("saved_items")
 }
