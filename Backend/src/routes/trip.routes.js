@@ -1,4 +1,3 @@
-// UC 13 Xem danh sách, UC 14 Tạo, UC 15 Sửa, UC 16 Xóa chuyến đi. Mọi route cần đăng nhập; chuyến không thuộc người dùng → 404 (CBR 8).
 import { Router } from 'express';
 import { z } from 'zod';
 import { auth } from '../middlewares/auth.js';
@@ -56,30 +55,64 @@ const budgetField = z
   .transform(parseMoney);
 
 // CBR 1 + CBR 2. Dùng chung cho tạo (UC 14) và sửa (UC 15), vì Screen 6 là một form cho cả hai.
-const tripBody = z
-  .object({
-    title: requiredText('Tên chuyến đi', 150),
-    destination: requiredText('Điểm đến', 150),
-    startDate: dateOnly('Ngày đi'),
-    endDate: dateOnly('Ngày về'),
-    budget: budgetField,
-    description: nullableText('Mô tả', 1000),
-    address: nullableText('Địa chỉ', 255),
-    latitude: coordinate(-90, 90),
-    longitude: coordinate(-180, 180),
-    isPublic: z.boolean({ error: BAD_FORMAT }).optional(),
-  })
-  .refine((v) => v.endDate >= v.startDate, {
-    path: ['endDate'],
-    error: m('MSG 32', MSG['MSG 32']),
-    // Vẫn báo MSG 32 khi ô khác có lỗi, miễn hai ngày đều hợp lệ.
-    when: ({ value, issues }) =>
-      value?.startDate instanceof Date &&
-      value?.endDate instanceof Date &&
-      !issues.some((i) => i.path[0] === 'startDate' || i.path[0] === 'endDate'),
-  });
+const tripFields = z.object({
+  title: requiredText('Tên chuyến đi', 150),
+  destination: requiredText('Điểm đến', 150),
+  startDate: dateOnly('Ngày đi'),
+  endDate: dateOnly('Ngày về'),
+  budget: budgetField,
+  description: nullableText('Mô tả', 1000),
+  address: nullableText('Địa chỉ', 255),
+  latitude: coordinate(-90, 90),
+  longitude: coordinate(-180, 180),
+  isPublic: z.boolean({ error: BAD_FORMAT }).optional(),
+  // Liên kết tới điểm đến có sẵn (Screen 4); null = bỏ liên kết. Id không tồn tại → 400 MSG 3 (errorHandler, P2003).
+  destinationId: z.number({ error: BAD_FORMAT }).int(BAD_FORMAT).positive(BAD_FORMAT).nullable().optional(),
+});
+
+const endAfterStart = {
+  path: ['endDate'],
+  error: m('MSG 32', MSG['MSG 32']),
+  // Vẫn báo MSG 32 khi ô khác có lỗi, miễn hai ngày đều hợp lệ.
+  when: ({ value, issues }) =>
+    value?.startDate instanceof Date &&
+    value?.endDate instanceof Date &&
+    !issues.some((i) => i.path[0] === 'startDate' || i.path[0] === 'endDate'),
+};
+
+// UC 14: tạo chuyến cần đủ các trường bắt buộc (CBR 1 + CBR 2).
+const tripBody = tripFields.refine((v) => v.endDate >= v.startDate, endAfterStart);
+
+// UC 15 + UC 18: sửa chuyến chỉ gửi trường cần đổi (ví dụ popup Chia sẻ chỉ gửi { isPublic }).
+// Trường đã gửi vẫn kiểm tra như khi tạo; nếu chỉ đổi một trong hai ngày, service so với ngày còn lại trong DB.
+const tripPatchBody = tripFields
+  .partial()
+  .refine((v) => !(v.startDate && v.endDate) || v.endDate >= v.startDate, endAfterStart);
 
 const idParams = z.object({ id: idParam });
+
+// TP-21 (Hà): PUT nhận thêm tên trường dạng snake_case / cũ để client cũ vẫn chạy:
+// public_trip, publicTrip → isPublic; start_date → startDate; end_date → endDate; destination_id → destinationId.
+// Tên chuẩn (camelCase) được ưu tiên nếu client gửi cả hai.
+const LEGACY_KEYS = {
+  public_trip: 'isPublic',
+  publicTrip: 'isPublic',
+  start_date: 'startDate',
+  end_date: 'endDate',
+  destination_id: 'destinationId',
+};
+
+function acceptLegacyKeys(req, res, next) {
+  const body = req.body;
+  if (body && typeof body === 'object' && !Array.isArray(body)) {
+    for (const [legacy, key] of Object.entries(LEGACY_KEYS)) {
+      if (!(legacy in body)) continue;
+      if (body[key] === undefined) body[key] = body[legacy];
+      delete body[legacy];
+    }
+  }
+  next();
+}
 
 // Danh sách: ?status=UPCOMING|ONGOING|PAST (bỏ trống = Tất cả) và ?q= (tìm theo tên chuyến hoặc điểm đến, không phân biệt dấu).
 const listQuery = z.object({
@@ -104,7 +137,7 @@ router.use(auth);
 router.get('/', validate({ query: listQuery }), controller.list);
 router.post('/', validate({ body: tripBody }), controller.create);
 router.get('/:id', validate({ params: idParams }), controller.detail);
-router.put('/:id', validate({ params: idParams, body: tripBody }), controller.update);
+router.put('/:id', acceptLegacyKeys, validate({ params: idParams, body: tripPatchBody }), controller.update);
 router.delete('/:id', validate({ params: idParams }), controller.remove);
 
 export default router;

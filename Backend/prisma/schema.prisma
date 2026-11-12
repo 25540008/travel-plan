@@ -93,6 +93,9 @@ model ItineraryItem {
   activity     String   @db.VarChar(200)
   location     String?  @db.VarChar(200)
   note         String?  @db.VarChar(1000)
+  // Toạ độ địa điểm của hoạt động (chọn từ gợi ý Nominatim ở Screen 8) để ghim trên bản đồ ngày (Screen 7).
+  latitude     Decimal? @db.Decimal(10, 7)
+  longitude    Decimal? @db.Decimal(10, 7)
   createdAt    DateTime @default(now()) @map("created_at")
   trip         Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
 

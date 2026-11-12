@@ -22,3 +22,4 @@ export async function remove(req, res) {
   await tripService.deleteTrip(req.user.id, req.valid.params.id);
   res.status(204).end();
 }
+

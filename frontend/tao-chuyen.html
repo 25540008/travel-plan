@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tạo chuyến đi · Travelplan</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="css/trips.css">
+  <link rel="stylesheet" href="css/trip-form.css">
+</head>
+<!-- Screen 6 Tạo / sửa chuyến đi (UC 14, UC 15). Tạo: tao-chuyen.html; sửa: tao-chuyen.html?id=<id> (hoặc ?edit=<id>).
+     Mở từ Screen 4 với ?destination=<slug> thì điền sẵn điểm đến. -->
+<body data-page="myTrips">
+  <div id="site-header"></div>
+
+  <main class="container section trip-form-page" aria-busy="true">
+    <a class="back-link" id="back-link" data-link="myTrips">← Quay lại Chuyến đi của tôi</a>
+
+    <div id="not-found" class="card empty-box" hidden>
+      <p>Không tìm thấy chuyến đi.</p>
+      <a class="btn btn-primary" data-link="myTrips">Về Chuyến đi của tôi</a>
+    </div>
+
+    <form id="trip-form" novalidate>
+      <div class="trip-form-head">
+        <h1 id="form-title">Tạo chuyến đi mới</h1>
+        <div class="trip-form-actions">
+          <button type="button" class="btn btn-secondary" id="cancel-btn">Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu chuyến đi</button>
+        </div>
+      </div>
+
+      <div class="trip-form-grid">
+        <div class="trip-form-main">
+          <section class="card form-section">
+            <h2>Thông tin chuyến</h2>
+            <div class="field">
+              <label for="title">Tên chuyến đi</label>
+              <input class="input" id="title" name="title" required data-maxlength="150" placeholder="Ví dụ: Đà Lạt chill cuối tuần">
+            </div>
+            <div class="field">
+              <div class="label-row"><label for="description">Mô tả</label><span class="meta counter" id="desc-count">0/1000</span></div>
+              <textarea class="input" id="description" name="description" data-maxlength="1000" rows="3" placeholder="Đi cùng ai, muốn trải nghiệm gì..."></textarea>
+            </div>
+          </section>
+
+          <section class="card form-section">
+            <h2>Điểm đến</h2>
+            <div class="field place-field">
+              <label for="destination" class="visually-hidden">Điểm đến</label>
+              <input class="input" id="destination" name="destination" required data-maxlength="150" autocomplete="off"
+                placeholder="Tìm tỉnh, thành phố hoặc vùng (từ 2 ký tự)" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="place-list">
+              <ul class="place-list" id="place-list" role="listbox" hidden></ul>
+            </div>
+            <div class="place-pin" id="place-pin" hidden>
+              <div id="place-map" class="place-map" role="img" aria-label="Bản đồ điểm đến"></div>
+              <div class="place-pin-foot">
+                <span class="meta" id="place-coords"></span>
+                <a class="link" id="place-gmaps" target="_blank" rel="noopener">Mở Google Maps</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="card form-section">
+            <div class="section-head">
+              <h2>Ngày đi – về</h2>
+              <span class="chip" id="date-summary">Chọn ngày đi rồi ngày về</span>
+            </div>
+            <div class="field date-field">
+              <input type="hidden" name="startDate" id="startDate" data-label="Ngày đi">
+              <input type="hidden" name="endDate" id="endDate" data-label="Ngày về">
+              <div class="calendar" id="calendar" tabindex="-1">
+                <button type="button" class="cal-nav cal-prev" aria-label="Tháng trước">‹</button>
+                <div class="cal-months" id="cal-months"></div>
+                <button type="button" class="cal-nav cal-next" aria-label="Tháng sau">›</button>
+              </div>
+              <div class="field-error" id="date-error" role="alert"></div>
+            </div>
+          </section>
+
+          <section class="card form-section">
+            <h2>Ngân sách dự kiến</h2>
+            <div class="field">
+              <label for="budget" class="visually-hidden">Ngân sách dự kiến</label>
+              <div class="input-suffix">
+                <input class="input" id="budget" name="budget" inputmode="numeric" required data-type="money" data-label="Ngân sách dự kiến" placeholder="5.000.000">
+                <span>VND</span>
+              </div>
+            </div>
+            <div class="quick-chips" id="budget-chips">
+              <button type="button" class="status-tab" data-amount="2000000">2 triệu</button>
+              <button type="button" class="status-tab" data-amount="5000000">5 triệu</button>
+              <button type="button" class="status-tab" data-amount="10000000">10 triệu</button>
+              <button type="button" class="status-tab" data-amount="20000000">20 triệu</button>
+            </div>
+            <label class="check-row">
+              <input type="checkbox" id="isPublic" name="isPublic">
+              <span>
+                <strong>Chia sẻ công khai lịch trình</strong>
+                <span class="meta">Chuyến sẽ hiện ở Lịch trình mẫu. Khoản chi không bao giờ được chia sẻ.</span>
+              </span>
+            </label>
+          </section>
+        </div>
+
+        <aside class="trip-form-preview">
+          <p class="eyebrow">Xem trước</p>
+          <div id="preview"></div>
+          <p class="meta">Ảnh bìa đặt sau, ở trang chi tiết chuyến.</p>
+        </aside>
+      </div>
+    </form>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script type="module" src="js/layout.js"></script>
+  <script type="module" src="js/pages/tao-chuyen.js"></script>
+</body>
+</html>

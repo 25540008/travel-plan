@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lịch trình chia sẻ · Travelplan</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/trip.css">
+</head>
+<!-- Link chia sẻ công khai (UC 18): ai có link đều xem được, không cần đăng nhập. Dữ liệu: GET /api/public/trips/:id.
+     Chỉ hiện ngân sách dự kiến, không bao giờ hiện khoản chi. -->
+<body data-page="templates">
+  <div id="site-header"></div>
+
+  <main class="trip-page" aria-busy="true">
+    <div class="trip-hero" id="hero"></div>
+    <div class="container">
+      <section class="card card-float trip-head" id="trip-head">
+        <p class="trip-head-chips"><span class="chip chip-lake">Lịch trình chia sẻ công khai</span></p>
+        <h1 id="trip-title">&nbsp;</h1>
+        <p class="meta" id="trip-meta"></p>
+        <p class="meta" id="trip-desc"></p>
+      </section>
+
+      <div id="not-found" class="card empty-box" hidden>
+        <p>Lịch trình này không tồn tại hoặc đã tắt chia sẻ.</p>
+        <a class="btn btn-primary" data-link="home">Về Trang chủ</a>
+      </div>
+
+      <section id="days" class="shared-days"></section>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script type="module" src="js/layout.js"></script>
+  <script type="module" src="js/pages/chia-se.js"></script>
+</body>
+</html>
