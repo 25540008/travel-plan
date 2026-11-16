@@ -5,6 +5,9 @@ import { validate } from '../middlewares/validate.js';
 import { requiredText, dateOnly, idParam } from '../utils/validators.js';
 import { MSG, required, tooLong } from '../utils/messages.js';
 import * as controller from '../controllers/trip.controller.js';
+import { TRIP_TAG_CODES } from '../utils/tags.js';
+import * as cloneController from '../controllers/clone.controller.js';
+import { cloneTripSchema } from '../middlewares/clone.validation.js';
 
 const router = Router();
 
@@ -66,6 +69,12 @@ const tripFields = z.object({
   latitude: coordinate(-90, 90),
   longitude: coordinate(-180, 180),
   isPublic: z.boolean({ error: BAD_FORMAT }).optional(),
+  // Kiểu chuyến đi (UC 7 B3), ví dụ ["MOUNTAIN", "FOOD"]; trùng thì gộp lại.
+  tags: z
+    .array(z.enum(TRIP_TAG_CODES, { error: BAD_FORMAT }), { error: BAD_FORMAT })
+    .max(TRIP_TAG_CODES.length, BAD_FORMAT)
+    .transform((list) => [...new Set(list)])
+    .optional(),
   // Liên kết tới điểm đến có sẵn (Screen 4); null = bỏ liên kết. Id không tồn tại → 400 MSG 3 (errorHandler, P2003).
   destinationId: z.number({ error: BAD_FORMAT }).int(BAD_FORMAT).positive(BAD_FORMAT).nullable().optional(),
 });
@@ -139,5 +148,5 @@ router.post('/', validate({ body: tripBody }), controller.create);
 router.get('/:id', validate({ params: idParams }), controller.detail);
 router.put('/:id', acceptLegacyKeys, validate({ params: idParams, body: tripPatchBody }), controller.update);
 router.delete('/:id', validate({ params: idParams }), controller.remove);
-
+router.post('/:id/clone', auth, validate(cloneTripSchema), cloneController.cloneTrip);
 export default router;

@@ -76,6 +76,7 @@ async function main() {
       budget: 5000000,
       description: 'Săn mây, cà phê rừng thông và đặc sản chợ Đà Lạt',
       isPublic: true,
+      tags: ['MOUNTAIN', 'COFFEE', 'FOOD'],
       items: { create: items },
       expenses: { create: expenses },
     },

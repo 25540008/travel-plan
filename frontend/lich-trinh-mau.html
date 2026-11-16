@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lịch trình mẫu · Travelplan</title>
+
+  <!-- Google Fonts: Lexend & Be Vietnam Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lexend:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- CSS Design Tokens, Base và style riêng Screen 2 -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/lich-trinh-mau.css">
+</head>
+<body data-page="templates">
+  <div id="site-header"></div>
+
+  <!-- HERO SECTION BANNER -->
+  <section class="hero-section">
+    <div class="hero-bg-art">
+      <svg viewBox="0 0 1440 420" preserveAspectRatio="none" fill="none">
+        <rect width="1440" height="420" fill="#716650"/>
+        <circle cx="720" cy="200" r="140" fill="#E6C875" opacity="0.65"/>
+        <path d="M0 260 Q360 190 720 250 T1440 240 L1440 420 L0 420 Z" fill="#4B6368" opacity="0.75"/>
+        <path d="M0 310 Q420 270 850 330 T1440 300 L1440 420 L0 420 Z" fill="#24454C"/>
+        <path d="M-40 420 Q120 300 240 180" stroke="#12252A" stroke-width="16" fill="none"/>
+        <path d="M240 180 Q320 160 380 200 M240 180 Q300 130 350 140 M240 180 Q220 110 200 90 M240 180 Q160 140 130 170" stroke="#12252A" stroke-width="12" fill="none"/>
+        <path d="M1480 420 Q1300 290 1160 160" stroke="#12252A" stroke-width="18" fill="none"/>
+        <path d="M1160 160 Q1050 140 980 180 M1160 160 Q1100 100 1020 90 M1160 160 Q1250 100 1310 120 M1160 160 Q1270 160 1340 210" stroke="#12252A" stroke-width="12" fill="none"/>
+      </svg>
+    </div>
+
+
+    <!-- Khung tìm kiếm ngang -->
+    <div class="hero-content">
+      <div class="breadcrumb"><a href="index.html" data-link="home">Trang chủ</a> / Lịch trình mẫu</div>
+      <h1 class="hero-title">Bạn muốn đi đâu?</h1>
+
+      <form class="hero-search-box" id="topSearchForm">
+        <div class="search-col">
+          <label class="search-label" for="inputDestination">ĐIỂM ĐẾN</label>
+          <input type="text" id="inputDestination" class="search-input" placeholder="Đà Lạt, Hội An…" autocomplete="off">
+        </div>
+        <div class="search-col">
+          <label class="search-label" for="inputDeparture">KHỞI HÀNH</label>
+          <input type="date" id="inputDeparture" class="search-input">
+        </div>
+        <div class="search-col">
+          <label class="search-label" for="inputDays">SỐ NGÀY</label>
+          <select id="inputDays" class="search-input">
+            <option value="">Bất kỳ</option>
+            <option value="1">1 ngày</option>
+            <option value="2">2N1Đ</option>
+            <option value="3">3N2Đ</option>
+            <option value="4">4 ngày+</option>
+          </select>
+        </div>
+        <button type="submit" class="search-btn">Tìm</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ĐIỂM ĐẾN NỔI BẬT -->
+  <section class="highlights-section" id="destSection">
+    <div class="container">
+      <h2 class="section-title">Điểm đến nổi bật</h2>
+      <div class="dest-grid" id="destGrid">
+      </div>
+    </div>
+  </section>
+
+  <!-- BỘ LỌC VÀ LƯỚI LỊCH TRÌNH -->
+  <main class="container main-layout">
+    <aside class="sidebar">
+      <div class="filter-header">
+        <h3>Bộ lọc</h3>
+        <button type="button" class="btn-reset" id="btnResetFilter">Xóa lọc</button>
+      </div>
+
+      <!-- Kiểu chuyến đi -->
+      <div>
+        <div class="filter-group-title">Kiểu chuyến đi</div>
+        <div class="filter-list" id="tagsList">
+          <label class="filter-checkbox-label">
+            <input type="checkbox" value="MOUNTAIN">
+            <span>Núi, đồi</span>
+          </label>
+          <label class="filter-checkbox-label">
+            <input type="checkbox" value="FOOD">
+            <span>Ẩm thực</span>
+          </label>
+          <label class="filter-checkbox-label">
+            <input type="checkbox" value="COFFEE">
+            <span>Cà phê</span>
+          </label>
+          <label class="filter-checkbox-label">
+            <input type="checkbox" value="TREKKING">
+            <span>Trekking</span>
+          </label>
+          <label class="filter-checkbox-label">
+            <input type="checkbox" value="FRIENDS">
+            <span>Nhóm bạn</span>
+          </label>
+          <label class="filter-checkbox-label">
+            <input type="checkbox" value="BUDGET">
+            <span>Tiết kiệm</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Số ngày -->
+      <div>
+        <div class="filter-group-title">Số ngày</div>
+        <div class="days-options" id="daysOptions">
+          <button type="button" class="days-pill" data-days="1">1 ngày</button>
+          <button type="button" class="days-pill" data-days="2">2N1Đ</button>
+          <button type="button" class="days-pill" data-days="3">3N2Đ</button>
+          <button type="button" class="days-pill" data-days="4">4 ngày+</button>
+        </div>
+      </div>
+
+      <!-- Ngân sách 1 - 5 triệu -->
+      <div>
+        <div class="filter-group-title">Ngân sách</div>
+        <div class="slider-container">
+          <input type="range" id="budgetRange" class="range-input" min="1000000" max="5000000" step="500000" value="5000000">
+        </div>
+        <div class="budget-values">
+          <span>1 triệu</span>
+          <span id="budgetMaxLabel">5 triệu</span>
+        </div>
+      </div>
+
+      <!-- Bản đồ thu nhỏ -->
+      <div class="map-box">
+        <div class="map-preview">
+          <svg width="100%" height="130" viewBox="0 0 260 130" preserveAspectRatio="none">
+            <path d="M0 45 L260 75 M70 0 L120 130 M0 115 L260 100" stroke="#FFFFFF" stroke-width="5" fill="none"></path>
+            <ellipse cx="170" cy="65" rx="34" ry="16" fill="#BFDCEB"></ellipse>
+          </svg>
+          <span class="map-pin" style="left: 30%; top: 32%;"></span>
+          <span class="map-pin" style="left: 60%; top: 56%;"></span>
+        </div>
+        <a href="#map" class="map-link">Xem trên bản đồ</a>
+      </div>
+    </aside>
+
+    <!-- Cột kết quả -->
+    <section class="results-area">
+      <div class="results-top">
+        <div class="results-heading">
+          <h2 id="headingTitle">Lịch trình mẫu</h2>
+          <p id="subSummary" aria-live="polite"></p>
+        </div>
+
+        <div class="sort-box">
+          <label for="sortDropdown">Sắp xếp</label>
+          <select id="sortDropdown" class="sort-dropdown">
+            <option value="popular">Phổ biến nhất</option>
+            <option value="newest">Mới nhất</option>
+            <option value="cheapest">Rẻ nhất</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Lưới 3 cột danh sách lịch trình -->
+      <div class="cards-grid" id="cardsGrid" aria-busy="true"></div>
+
+      <!-- Nút Xem thêm -->
+      <div class="btn-more-container">
+        <button type="button" class="btn btn-secondary" id="btnLoadMore">Xem thêm lịch trình</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script type="module" src="js/layout.js"></script>
+  <script type="module" src="js/lich-trinh-mau.js"></script>
+</body>
+</html>

@@ -1,38 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { AppError } from '../utils/AppError.js';
 
-const cacheStore = new Map();
-
-const weatherCache = {
-  get(key) {
-    const cached = cacheStore.get(key);
-    if (!cached) return null;
-    if (Date.now() > cached.expiresAt) {
-      cacheStore.delete(key);
-      return null;
-    }
-    return cached.data;
-  },
-  set(key, data, ttlSeconds = 1800) {
-    cacheStore.set(key, {
-      data,
-      expiresAt: Date.now() + ttlSeconds * 1000,
-    });
-  },
-};
-
-const WMO_MAP = {
-  0: 'Trời quang',
-  1: 'Ít mây', 2: 'Ít mây',
-  3: 'Nhiều mây',
-  45: 'Sương mù', 48: 'Sương mù',
-  51: 'Mưa phùn', 53: 'Mưa phùn', 55: 'Mưa phùn',
-  61: 'Mưa nhẹ', 80: 'Mưa nhẹ',
-  63: 'Mưa vừa', 81: 'Mưa vừa',
-  65: 'Mưa to', 82: 'Mưa to',
-  95: 'Dông', 96: 'Dông', 99: 'Dông',
-};
-
 function parseTimeString(hhmm) {
   return new Date(`1970-01-01T${hhmm}:00Z`);
 }
@@ -263,53 +231,4 @@ export async function deleteItineraryItem(tripId, itemId, userId) {
   });
 
   return { success: true };
-}
-
-export async function getWeather(lat, lng, days = 7) {
-  const roundedLat = parseFloat(lat).toFixed(2);
-  const roundedLng = parseFloat(lng).toFixed(2);
-  const cacheKey = `weather_${roundedLat}_${roundedLng}_${days}`;
-
-  const cached = weatherCache.get(cacheKey);
-  if (cached) return cached;
-
-  try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${roundedLat}&longitude=${roundedLng}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=temperature_2m,precipitation_probability,weathercode&timezone=Asia/Ho_Chi_Minh&forecast_days=${days}`;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeoutId);
-
-    if (!res.ok) throw new Error('Open-Meteo API error');
-
-    const data = await res.json();
-
-    const dailyForecast = (data.daily?.time || []).map((date, index) => {
-      const code = data.daily.weathercode[index];
-      return {
-        date,
-        tempMax: data.daily.temperature_2m_max[index],
-        tempMin: data.daily.temperature_2m_min[index],
-        precipitationProb: data.daily.precipitation_probability_max[index],
-        weatherCode: code,
-        description: WMO_MAP[code] || 'Trời nhiều mây',
-      };
-    });
-
-    const result = {
-      source: 'Open-Meteo',
-      updatedAt: new Date().toISOString(),
-      daily: dailyForecast,
-      hourly: data.hourly,
-    };
-
-    weatherCache.set(cacheKey, result);
-    return result;
-  } catch (err) {
-    const error = new Error('Weather service unavailable');
-    error.status = 502;
-    throw err;
-  }
 }
