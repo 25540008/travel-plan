@@ -8,6 +8,7 @@ import exampleRoutes from './example.routes.js';
 import devRoutes from './dev.routes.js';
 import weatherRoutes from './weather.routes.js';
 import itineraryRoutes from './itinerary.routes.js';
+import publicItineraryRoutes from './publicItineraries.routes.js';
 import publicRoutes from './public.routes.js';
 
 const router = Router();
@@ -21,6 +22,7 @@ router.use('/trips', tripRoutes);
 // router.use('/trips', tripRoutes);
 router.use('/public/weather', weatherRoutes);
 router.use('/', itineraryRoutes);
+router.use('/public/itineraries', publicItineraryRoutes);
 router.use('/public', publicRoutes);
 
 if (!env.isProd) {
