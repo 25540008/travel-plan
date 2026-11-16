@@ -10,6 +10,7 @@ import weatherRoutes from './weather.routes.js';
 import itineraryRoutes from './itinerary.routes.js';
 import publicItineraryRoutes from './publicItineraries.routes.js';
 import publicRoutes from './public.routes.js';
+import savedRoutes from './saved.routes.js';
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use('/public/weather', weatherRoutes);
 router.use('/', itineraryRoutes);
 router.use('/public/itineraries', publicItineraryRoutes);
 router.use('/public', publicRoutes);
+router.use('/me/saved', savedRoutes);
 
 if (!env.isProd) {
   router.use('/_example', exampleRoutes);
