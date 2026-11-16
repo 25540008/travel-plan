@@ -393,6 +393,9 @@ async function load({ keepDay = false } = {}) {
   }
   selectDay(state.selected, { push: false });
 
+  // chuyen-di.html?id=..&tab=budget mở thẳng tab Ngân sách (Screen 9)
+  if (!keepDay && params.get('tab') === 'budget') document.querySelector('.trip-tab[data-tab="budget"]')?.click();
+
   // Thời tiết tải sau, lỗi thì bỏ qua (CBR 5)
   if (!state.weather && hasCoords(state.trip)) {
     const daysAhead = daysBetween(todayVN(), state.trip.endDate);

@@ -1,20 +1,5 @@
 import * as itineraryService from '../services/itinerary.service.js';
 
-export async function getWeather(req, res, next) {
-  try {
-    const lat = req.valid?.query?.lat || req.query.lat;
-    const lng = req.valid?.query?.lng || req.query.lng;
-    const days = req.valid?.query?.days || req.query.days;
-    const weather = await itineraryService.getWeather(lat, lng, days);
-    return res.status(200).json(weather);
-  } catch (err) {
-    if (err.status === 502) {
-      return res.status(502).json({ error: 'Service Unavailable' });
-    }
-    next(err);
-  }
-}
-
 export async function getItinerary(req, res, next) {
   try {
     const id = req.params.id;

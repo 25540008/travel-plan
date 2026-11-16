@@ -3,7 +3,6 @@ import * as itineraryController from '../controllers/itinerary.controller.js';
 import { validate } from '../middlewares/validate.js';
 import { auth as authMiddleware } from '../middlewares/auth.js';
 import {
-  weatherSchema,
   getItinerarySchema,
   createItinerarySchema,
   updateItinerarySchema,
@@ -11,13 +10,6 @@ import {
 } from '../middlewares/itinerary.validation.js';
 
 const router = express.Router();
-
-// GET /api/public/weather?lat=&lng=&days=
-router.get(
-  '/public/weather',
-  validate(weatherSchema),
-  itineraryController.getWeather
-);
 
 // GET & POST /api/trips/:id/itinerary
 router.get(

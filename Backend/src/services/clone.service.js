@@ -1,13 +1,15 @@
 import prisma from '../lib/prisma.js';
 import { AppError } from '../utils/AppError.js';
 
-function getNextSaturday() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  const day = d.getDay();
-  const diff = (6 - day + 7) % 7 || 7;
-  d.setDate(d.getDate() + diff);
-  return d;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const VN_OFFSET_MS = 7 * 60 * 60 * 1000; // Asia/Ho_Chi_Minh, không có giờ mùa hè
+
+/** Thứ Bảy gần nhất theo giờ Việt Nam (hôm nay là thứ Bảy thì lấy thứ Bảy tuần sau), dạng Date 00:00 UTC như cột @db.Date. */
+export function nextSaturday(now = new Date()) {
+  const vn = new Date(now.getTime() + VN_OFFSET_MS);
+  const today = Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate());
+  const diff = (6 - vn.getUTCDay() + 7) % 7 || 7;
+  return new Date(today + diff * DAY_MS);
 }
 
 export async function cloneTrip(originalTripId, userId, requestedStartDate) {
@@ -20,7 +22,6 @@ export async function cloneTrip(originalTripId, userId, requestedStartDate) {
       items: {
         orderBy: [{ activityDate: 'asc' }, { startTime: 'asc' }],
       },
-      clones: true,
     },
   });
 
@@ -36,12 +37,8 @@ export async function cloneTrip(originalTripId, userId, requestedStartDate) {
   const origEnd = new Date(originalTrip.endDate);
   const durationMs = origEnd.getTime() - origStart.getTime();
 
-  let newStart;
-  if (requestedStartDate) {
-    newStart = new Date(`${requestedStartDate}T00:00:00Z`);
-  } else {
-    newStart = getNextSaturday();
-  }
+  // startDate đã được validate (YYYY-MM-DD hợp lệ) và đổi sang Date ở clone.validation.js
+  const newStart = requestedStartDate ?? nextSaturday();
   const newEnd = new Date(newStart.getTime() + durationMs);
   const offsetTime = newStart.getTime() - origStart.getTime();
 
@@ -61,6 +58,7 @@ export async function cloneTrip(originalTripId, userId, requestedStartDate) {
         description: originalTrip.description,
         coverImage: originalTrip.coverImage,
         coverColor: originalTrip.coverColor,
+        tags: originalTrip.tags,
         isPublic: false,
         clonedFromId: originalTrip.id,
         aiItinerary: originalTrip.aiItinerary,
@@ -80,6 +78,8 @@ export async function cloneTrip(originalTripId, userId, requestedStartDate) {
           activity: item.activity,
           location: item.location,
           note: item.note,
+          latitude: item.latitude,
+          longitude: item.longitude,
         };
       });
 
@@ -98,47 +98,53 @@ export async function cloneTrip(originalTripId, userId, requestedStartDate) {
   };
 }
 
-export async function getTrendingDestinations() {
+const TRENDING_LIMIT = 8;
+const TRENDING_WINDOW_DAYS = 7;
+
+/**
+ * Screen 1 "Cuối tuần này đi đâu ta?": xếp hạng TẤT CẢ điểm đến theo số chuyến công khai mới tạo
+ * và số lượt dùng lại trong 7 ngày gần nhất, rồi mới lấy 8 mục đầu.
+ * fromPrice = ngân sách thấp nhất của chuyến công khai (số VND, null nếu chưa có) để frontend tự định dạng "Từ x triệu".
+ */
+export async function getTrendingDestinations(now = new Date()) {
+  const since = new Date(now.getTime() - TRENDING_WINDOW_DAYS * DAY_MS);
   const destinations = await prisma.destination.findMany({
-    take: 8,
-    include: {
+    select: {
+      id: true,
+      name: true,
+      address: true,
+      imageUrl: true,
+      description: true,
       trips: {
         where: { isPublic: true },
-        select: { id: true, budget: true, clones: { select: { id: true } } },
+        select: {
+          budget: true,
+          createdAt: true,
+          clones: { where: { createdAt: { gte: since } }, select: { id: true } },
+        },
       },
     },
   });
 
   const ranked = destinations.map((dest) => {
-    let minBudget = null;
-    let totalClones = 0;
-
-    dest.trips.forEach((tr) => {
-      const b = Number(tr.budget || 0);
-      if (b > 0 && (minBudget === null || b < minBudget)) {
-        minBudget = b;
-      }
-      totalClones += tr.clones.length;
-    });
-
-    let fromPriceText = 'Từ 1,5 triệu';
-    if (minBudget !== null) {
-      const inMillion = (minBudget / 1000000).toFixed(1).replace('.0', '');
-      fromPriceText = `Từ ${inMillion} triệu`;
-    }
-
+    const budgets = dest.trips.map((t) => Number(t.budget)).filter((b) => b > 0);
+    const recentTrips = dest.trips.filter((t) => t.createdAt >= since).length;
+    const recentClones = dest.trips.reduce((sum, t) => sum + t.clones.length, 0);
     return {
       id: dest.id,
       name: dest.name,
       address: dest.address,
       imageUrl: dest.imageUrl,
       description: dest.description,
-      fromPrice: fromPriceText,
-      totalTrips: dest.trips.length,
-      score: dest.trips.length * 2 + totalClones * 3,
+      fromPrice: budgets.length ? Math.min(...budgets) : null,
+      itineraryCount: dest.trips.length,
+      recentTrips,
+      recentClones,
+      score: recentTrips * 2 + recentClones * 3,
     };
   });
 
-  ranked.sort((a, b) => b.score - a.score);
-  return ranked;
+  // Hoà điểm thì điểm đến có nhiều lịch trình công khai hơn đứng trước, rồi theo id cho ổn định.
+  ranked.sort((a, b) => b.score - a.score || b.itineraryCount - a.itineraryCount || a.id - b.id);
+  return ranked.slice(0, TRENDING_LIMIT);
 }

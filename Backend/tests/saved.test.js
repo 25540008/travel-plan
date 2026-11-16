@@ -165,6 +165,19 @@ describe('UC 12: Lưu / bỏ lưu (/api/me/saved) [TP-37]', () => {
       expect(res.body.length).toBeGreaterThanOrEqual(1);
       expect(res.body[0]).toHaveProperty('details');
     });
+
+    it('CBR 8: chuyến đã lưu mà chủ chuyển sang riêng tư thì không trả chi tiết', async () => {
+      await prisma.trip.update({ where: { id: publicTrip.id }, data: { isPublic: false } });
+      try {
+        const res = await request(app).get('/api/me/saved?itemType=TRIP').set('Authorization', `Bearer ${token1}`);
+        expect(res.status).toBe(200);
+        const row = res.body.find((r) => r.itemId === publicTrip.id);
+        expect(row).toBeDefined();
+        expect(row.details).toBeNull();
+      } finally {
+        await prisma.trip.update({ where: { id: publicTrip.id }, data: { isPublic: true } });
+      }
+    });
   });
 
   describe('DELETE /api/me/saved (Xóa khỏi danh sách lưu)', () => {

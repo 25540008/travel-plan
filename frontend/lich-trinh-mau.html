@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="css/lich-trinh-mau.css">
 </head>
 <body data-page="templates">
+  <div id="site-header"></div>
 
   <!-- HERO SECTION BANNER -->
   <section class="hero-section">
@@ -32,42 +33,30 @@
       </svg>
     </div>
 
-    <!-- Header Navigation -->
-    <header class="header-nav">
-      <!-- Logo-->
-      <a href="index.html" class="brand">
-        <span class="brand-mark" aria-hidden="true">✦</span>travelplan
-      </a>
-
-      <!-- Menu -->
-      <nav class="nav-menu">
-        <a href="index.html" class="nav-item">Trang chủ</a>
-        <a href="lich-trinh-mau.html" class="nav-item active">Lịch trình mẫu</a>
-        <a href="diem-den.html" class="nav-item">Điểm đến</a>
-        <a href="chuyen-di-cua-toi.html" class="nav-item">Chuyến đi của tôi</a>
-      </nav>
-
-      <!-- Nút avatar tài khoản -->
-      <button class="avatar-btn" id="userBtn" title="Nguyễn Văn A">VA</button>
-    </header>
 
     <!-- Khung tìm kiếm ngang -->
     <div class="hero-content">
-      <div class="breadcrumb"><a href="index.html">Trang chủ</a> / Lịch trình mẫu</div>
+      <div class="breadcrumb"><a href="index.html" data-link="home">Trang chủ</a> / Lịch trình mẫu</div>
       <h1 class="hero-title">Bạn muốn đi đâu?</h1>
 
       <form class="hero-search-box" id="topSearchForm">
         <div class="search-col">
           <label class="search-label" for="inputDestination">ĐIỂM ĐẾN</label>
-          <input type="text" id="inputDestination" class="search-input" value="Đà Lạt" placeholder="Nhập điểm đến...">
+          <input type="text" id="inputDestination" class="search-input" placeholder="Đà Lạt, Hội An…" autocomplete="off">
         </div>
         <div class="search-col">
           <label class="search-label" for="inputDeparture">KHỞI HÀNH</label>
-          <input type="text" id="inputDeparture" class="search-input" value="T7, 28/11" placeholder="Thời gian...">
+          <input type="date" id="inputDeparture" class="search-input">
         </div>
         <div class="search-col">
-          <label class="search-label" for="inputDaysDisplay">SỐ NGÀY</label>
-          <input type="text" id="inputDaysDisplay" class="search-input" value="3N2Đ" placeholder="VD: 3N2Đ">
+          <label class="search-label" for="inputDays">SỐ NGÀY</label>
+          <select id="inputDays" class="search-input">
+            <option value="">Bất kỳ</option>
+            <option value="1">1 ngày</option>
+            <option value="2">2N1Đ</option>
+            <option value="3">3N2Đ</option>
+            <option value="4">4 ngày+</option>
+          </select>
         </div>
         <button type="submit" class="search-btn">Tìm</button>
       </form>
@@ -75,98 +64,10 @@
   </section>
 
   <!-- ĐIỂM ĐẾN NỔI BẬT -->
-  <section class="highlights-section">
+  <section class="highlights-section" id="destSection">
     <div class="container">
       <h2 class="section-title">Điểm đến nổi bật</h2>
       <div class="dest-grid" id="destGrid">
-        <a href="diem-den-chi-tiet.html?slug=da-lat" class="dest-card" data-slug="da-lat">
-          <svg viewBox="0 0 200 200" preserveAspectRatio="none">
-            <rect width="200" height="200" fill="#E6BE8A"/>
-            <circle cx="170" cy="90" r="30" fill="#FCE9B8"/>
-            <path d="M0 130 Q100 110 200 130 L200 200 L0 200 Z" fill="#719B91"/>
-            <ellipse cx="100" cy="155" rx="45" ry="12" fill="#B4D5CD"/>
-            <polygon points="40,150 30,175 50,175" fill="#1C3F3A"/>
-            <polygon points="150,145 140,170 160,170" fill="#1C3F3A"/>
-          </svg>
-          <div class="dest-info">
-            <div class="dest-name">Đà Lạt</div>
-            <div class="dest-count">128 lịch trình</div>
-          </div>
-        </a>
-
-        <a href="diem-den-chi-tiet.html?slug=hoi-an" class="dest-card" data-slug="hoi-an">
-          <svg viewBox="0 0 200 200" preserveAspectRatio="none">
-            <rect width="200" height="200" fill="#201E50"/>
-            <polygon points="10,130 50,100 90,130" fill="#78290F"/>
-            <rect x="20" y="130" width="60" height="70" fill="#F4A261"/>
-            <polygon points="80,130 120,100 160,130" fill="#78290F"/>
-            <rect x="90" y="130" width="60" height="70" fill="#F4A261"/>
-            <circle cx="35" cy="120" r="6" fill="#E76F51"/>
-            <circle cx="105" cy="120" r="6" fill="#E76F51"/>
-          </svg>
-          <div class="dest-info">
-            <div class="dest-name">Hội An</div>
-            <div class="dest-count">96 lịch trình</div>
-          </div>
-        </a>
-
-        <a href="diem-den-chi-tiet.html?slug=phu-quoc" class="dest-card" data-slug="phu-quoc">
-          <svg viewBox="0 0 200 200" preserveAspectRatio="none">
-            <rect width="200" height="200" fill="#F4A261"/>
-            <circle cx="100" cy="115" r="40" fill="#E9C46A"/>
-            <rect y="125" width="200" height="75" fill="#2A9D8F"/>
-            <polygon points="70,128 65,120 70,120" fill="#FFFFFF"/>
-            <path d="M0 125 Q40 100 60 135" stroke="#1D3557" stroke-width="4" fill="none"/>
-          </svg>
-          <div class="dest-info">
-            <div class="dest-name">Phú Quốc</div>
-            <div class="dest-count">74 lịch trình</div>
-          </div>
-        </a>
-
-        <a href="diem-den-chi-tiet.html?slug=sa-pa" class="dest-card" data-slug="sa-pa">
-          <svg viewBox="0 0 200 200" preserveAspectRatio="none">
-            <rect width="200" height="200" fill="#C5D3E8"/>
-            <polygon points="10,130 80,60 140,130" fill="#8D99AE"/>
-            <polygon points="80,130 140,75 200,130" fill="#6C757D"/>
-            <path d="M0 140 Q100 130 200 145 L200 200 L0 200 Z" fill="#99D98C"/>
-            <path d="M0 160 Q100 150 200 165 L200 200 L0 200 Z" fill="#76C893"/>
-            <path d="M0 180 Q100 170 200 185 L200 200 L0 200 Z" fill="#52B69A"/>
-          </svg>
-          <div class="dest-info">
-            <div class="dest-name">Sa Pa</div>
-            <div class="dest-count">61 lịch trình</div>
-          </div>
-        </a>
-
-        <a href="diem-den-chi-tiet.html?slug=ha-long" class="dest-card" data-slug="ha-long">
-          <svg viewBox="0 0 200 200" preserveAspectRatio="none">
-            <rect width="200" height="200" fill="#D8E2DC"/>
-            <rect y="130" width="200" height="70" fill="#457B9D"/>
-            <path d="M20 135 C30 70, 60 70, 70 135 Z" fill="#4A7C59"/>
-            <path d="M90 135 C100 85, 125 85, 135 135 Z" fill="#588157"/>
-            <polygon points="160,132 150,118 160,118" fill="#E63946"/>
-            <rect x="145" y="130" width="22" height="6" fill="#3D405B"/>
-          </svg>
-          <div class="dest-info">
-            <div class="dest-name">Hạ Long</div>
-            <div class="dest-count">52 lịch trình</div>
-          </div>
-        </a>
-
-        <a href="diem-den-chi-tiet.html?slug=vung-tau" class="dest-card" data-slug="vung-tau">
-          <svg viewBox="0 0 200 200" preserveAspectRatio="none">
-            <rect width="200" height="200" fill="#A8DADC"/>
-            <rect y="120" width="200" height="80" fill="#1D3557"/>
-            <path d="M40 200 Q120 100 200 150 L200 200 Z" fill="#588157"/>
-            <rect x="175" y="105" width="8" height="20" fill="#FFFFFF"/>
-            <polygon points="175,105 179,98 183,105" fill="#E63946"/>
-          </svg>
-          <div class="dest-info">
-            <div class="dest-name">Vũng Tàu</div>
-            <div class="dest-count">47 lịch trình</div>
-          </div>
-        </a>
       </div>
     </div>
   </section>
@@ -184,34 +85,28 @@
         <div class="filter-group-title">Kiểu chuyến đi</div>
         <div class="filter-list" id="tagsList">
           <label class="filter-checkbox-label">
-            <input type="checkbox" value="Núi, đồi" checked>
+            <input type="checkbox" value="MOUNTAIN">
             <span>Núi, đồi</span>
-            <span class="filter-count">84</span>
           </label>
           <label class="filter-checkbox-label">
-            <input type="checkbox" value="Ẩm thực" checked>
+            <input type="checkbox" value="FOOD">
             <span>Ẩm thực</span>
-            <span class="filter-count">51</span>
           </label>
           <label class="filter-checkbox-label">
-            <input type="checkbox" value="Cà phê">
+            <input type="checkbox" value="COFFEE">
             <span>Cà phê</span>
-            <span class="filter-count">46</span>
           </label>
           <label class="filter-checkbox-label">
-            <input type="checkbox" value="Trekking">
+            <input type="checkbox" value="TREKKING">
             <span>Trekking</span>
-            <span class="filter-count">19</span>
           </label>
           <label class="filter-checkbox-label">
-            <input type="checkbox" value="Nhóm bạn">
+            <input type="checkbox" value="FRIENDS">
             <span>Nhóm bạn</span>
-            <span class="filter-count">73</span>
           </label>
           <label class="filter-checkbox-label">
-            <input type="checkbox" value="Tiết kiệm">
+            <input type="checkbox" value="BUDGET">
             <span>Tiết kiệm</span>
-            <span class="filter-count">38</span>
           </label>
         </div>
       </div>
@@ -222,7 +117,7 @@
         <div class="days-options" id="daysOptions">
           <button type="button" class="days-pill" data-days="1">1 ngày</button>
           <button type="button" class="days-pill" data-days="2">2N1Đ</button>
-          <button type="button" class="days-pill active" data-days="3">3N2Đ</button>
+          <button type="button" class="days-pill" data-days="3">3N2Đ</button>
           <button type="button" class="days-pill" data-days="4">4 ngày+</button>
         </div>
       </div>
@@ -257,8 +152,8 @@
     <section class="results-area">
       <div class="results-top">
         <div class="results-heading">
-          <h2 id="headingTitle">Lịch trình Đà Lạt</h2>
-          <p id="subSummary">128 lịch trình · đang lọc 3N2Đ, dưới 5 triệu</p>
+          <h2 id="headingTitle">Lịch trình mẫu</h2>
+          <p id="subSummary" aria-live="polite"></p>
         </div>
 
         <div class="sort-box">
@@ -272,7 +167,7 @@
       </div>
 
       <!-- Lưới 3 cột danh sách lịch trình -->
-      <div class="cards-grid" id="cardsGrid"></div>
+      <div class="cards-grid" id="cardsGrid" aria-busy="true"></div>
 
       <!-- Nút Xem thêm -->
       <div class="btn-more-container">
@@ -281,16 +176,9 @@
     </section>
   </main>
 
-  <!-- FOOTER -->
-  <footer class="footer-bar">
-    <div class="container footer-content">
-      <span class="brand" style="color:var(--white)">
-        <span class="brand-mark" aria-hidden="true">✦</span>travelplan
-      </span>
-      <span>© 2026 travelplan · Đi nhiều, tính ít, chơi hết mình.</span>
-    </div>
-  </footer>
+  <div id="site-footer"></div>
 
+  <script type="module" src="js/layout.js"></script>
   <script type="module" src="js/lich-trinh-mau.js"></script>
 </body>
 </html>

@@ -1,11 +1,8 @@
-import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { toSlug } from '../utils/slug.js';
 
 // MSG 14 chưa có trong utils/messages.js (file chung) nên giữ tại đây.
 const MSG_14 = 'Chưa có lịch trình phù hợp. Bạn có muốn tự lên kế hoạch?';
-// Bảng trips ở Sprint 2 chưa có cột tags. Khi nhóm thêm cột này vào schema, lọc/hiển thị tag tự bật.
-const TAGS_SUPPORTED = Boolean(Prisma?.TripScalarFieldEnum?.tags);
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_CANDIDATES = 1000; // số chuyến công khai tối đa xét một lần (đủ cho quy mô đồ án)
@@ -75,7 +72,7 @@ async function loadPreviews(trips) {
 export async function listPublicItineraries({ page, size, destination, tag, days, budgetMax, sort }) {
   const where = { isPublic: true };
   if (budgetMax !== undefined) where.budget = { lte: budgetMax };
-  if (TAGS_SUPPORTED && tag?.length) where.tags = { hasSome: tag };
+  if (tag?.length) where.tags = { hasSome: tag };
   if (destination) Object.assign(where, await destinationFilter(destination));
 
   const rows = await prisma.trip.findMany({
@@ -89,7 +86,7 @@ export async function listPublicItineraries({ page, size, destination, tag, days
       startDate: true,
       endDate: true,
       budget: true,
-      ...(TAGS_SUPPORTED ? { tags: true } : {}),
+      tags: true,
       createdAt: true,
       user: { select: { fullName: true } },
       _count: { select: { clones: true } },

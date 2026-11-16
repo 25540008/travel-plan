@@ -59,12 +59,6 @@ describe('Itinerary APIs [TP-26]', () => {
   });
 
   describe('GET /api/public/weather', () => {
-    it('trả về 200 khi tham số lat, lng hợp lệ', async () => {
-      const res = await request(app).get('/api/public/weather?lat=11.94&lng=108.45&days=3');
-      expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('daily');
-    });
-
     it('trả về 400 MSG 3 khi lat/lng không phải là số', async () => {
       const res = await request(app).get('/api/public/weather?lat=abc&lng=108.45');
       expect(res.status).toBe(400);

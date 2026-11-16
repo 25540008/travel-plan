@@ -1,10 +1,11 @@
 // Screen 1 Trang chủ (UC 6 Tìm lịch trình từ Trang chủ).
 // B2: gọi song song 3 API công khai, mỗi khối có skeleton riêng, khối nào lỗi thì ẩn khối đó.
 // B3, B4: khung tìm kiếm 3 tab, chuyển trang với bộ lọc trên URL (ô trống thì bỏ tham số).
-// Nút [Dùng lại] và tim (UC 11, 12) theo CBR 3: khách → đăng nhập; đã đăng nhập → Screen 2 xử lý thao tác.
+// Nút [Dùng lại] và tim (UC 11, 12) dùng js/reuse-save.js (TP-40): khách → đăng nhập (CBR 3) rồi quay lại làm tiếp.
 import { pageUrl } from '../config.js';
 import { get } from '../api.js';
-import { isLoggedIn, redirectToLogin, takePendingAction } from '../auth.js';
+import { isLoggedIn } from '../auth.js';
+import { bindReuseSave, loadSaved, markSaved, runPendingAction } from '../reuse-save.js';
 import { MSG } from '../messages.js';
 import { formatMoney, formatMoneyShort, formatDayMonth } from '../format.js';
 import { coverHtml } from '../cover.js';
@@ -31,13 +32,20 @@ function toDestination(d) {
     province: src.province || src.region || '',
     imageUrl: src.imageUrl || src.image_url || src.coverImage || null,
     itineraryCount: src.itineraryCount ?? src.itinerary_count ?? src.tripCount ?? src.trip_count ?? src._count?.trips ?? null,
-    fromPrice: src.fromPrice ?? src.from_price ?? null,
+    // API trả số VND (TP-60, /public/destinations); chuỗi cũ kiểu "Từ 1,5 triệu" thì bỏ qua
+    fromPrice: Number.isFinite(Number(src.fromPrice ?? src.from_price)) && (src.fromPrice ?? src.from_price) !== null ? Number(src.fromPrice ?? src.from_price) : null,
     tagline: src.tagline || src.shortDescription || '',
   };
 }
 
 /** Tên người tạo: 2 chữ cuối của họ tên (UC 7 · B2). */
 const shortName = (full = '') => full.trim().split(/\s+/).slice(-2).join(' ');
+
+/** Mã tag của API (TP-36) → nhãn hiển thị. */
+const TAG_LABEL = {
+  BEACH: 'Biển', MOUNTAIN: 'Núi, đồi', OLD_TOWN: 'Phố cổ', FOOD: 'Ẩm thực',
+  COFFEE: 'Cà phê', TREKKING: 'Trekking', FRIENDS: 'Nhóm bạn', BUDGET: 'Tiết kiệm',
+};
 const initialsOf = (name = '') =>
   name.split(/\s+/).filter(Boolean).slice(-2).map((w) => w[0]).join('').toUpperCase() || 'TP';
 
@@ -45,7 +53,7 @@ function toItinerary(t) {
   const dest = t.destinationRef || (typeof t.destination === 'object' ? t.destination : null);
   const destName = dest?.name || (typeof t.destination === 'string' ? t.destination : '') || '';
   const days = t.days ?? t.dayCount ?? (t.startDate && t.endDate ? daysBetween(t.startDate, t.endDate) + 1 : null);
-  const author = t.user?.fullName || t.author?.fullName || t.authorName || t.ownerName || '';
+  const author = t.creatorName || t.user?.fullName || t.author?.fullName || t.authorName || t.ownerName || '';
   return {
     id: t.id,
     title: t.title || '',
@@ -54,7 +62,7 @@ function toItinerary(t) {
     coverImage: t.coverImage || t.cover_image || null,
     days,
     items: t.itemCount ?? t._count?.items ?? t.items?.length ?? null,
-    tags: (t.tags || []).map((x) => (typeof x === 'string' ? x : x.name || x.label)).filter(Boolean),
+    tags: (t.tags || []).map((x) => (typeof x === 'string' ? TAG_LABEL[x] || x : x.name || x.label)).filter(Boolean),
     spots: (t.highlights || t.spots || []).map((x) => (typeof x === 'string' ? x : x.name)).filter(Boolean),
     author: shortName(author),
     cloneCount: t.cloneCount ?? t.clone_count ?? t._count?.clones ?? 0,
@@ -245,7 +253,7 @@ function renderTrending(list) {
         <span class="trend-rank">${i + 1}</span>
         ${coverHtml({ coverImage: d.imageUrl, destination: d.name }, 'trend-thumb')}
         <span class="trend-text"><strong>${escapeHtml(d.name)}</strong>
-          ${d.itineraryCount != null ? `<span>${d.itineraryCount} chuyến đã lên kèo</span>` : ''}</span>
+          ${d.itineraryCount ? `<span>${d.itineraryCount} chuyến đã lên kèo</span>` : ''}</span>
       </a></li>`,
     )
     .join('');
@@ -269,7 +277,7 @@ function itineraryCardHtml(t) {
       <div class="trip-card-cover">
         ${coverHtml(t)}
         ${badge ? `<span class="chip chip-dark trip-card-status">${escapeHtml(badge)}</span>` : ''}
-        <button type="button" class="itin-save" data-action="save" data-id="${t.id}" aria-label="Lưu lịch trình ${escapeHtml(t.title)}">
+        <button type="button" class="itin-save" data-action="save" data-id="${t.id}" aria-pressed="false" aria-label="Lưu lịch trình ${escapeHtml(t.title)}">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
         </button>
       </div>
@@ -283,7 +291,8 @@ function itineraryCardHtml(t) {
         </p>
         <div class="itin-foot">
           <div>${t.cost != null ? `<span class="meta">Chi phí dự kiến</span><strong>${formatMoney(t.cost)}</strong>` : ''}</div>
-          <button type="button" class="btn btn-dark btn-sm" data-action="reuse" data-id="${t.id}">Dùng lại</button>
+          <button type="button" class="btn btn-dark btn-sm" data-action="reuse" data-id="${t.id}"
+            data-title="${escapeHtml(t.title)}" data-days="${t.days ?? 1}">Dùng lại</button>
         </div>
       </div>
     </article>`;
@@ -300,6 +309,7 @@ function renderItineraries(list) {
     return;
   }
   grid.innerHTML = list.slice(0, 3).map(itineraryCardHtml).join('');
+  markSaved(grid);
 }
 
 $('itin-empty-cta').addEventListener('click', (e) => {
@@ -307,24 +317,16 @@ $('itin-empty-cta').addEventListener('click', (e) => {
   goCreateTrip();
 });
 
-/** UC 11 Dùng lại, UC 12 Lưu: khách → Screen 10 (CBR 3); thành viên → Screen 2 làm tiếp thao tác (TP-40). */
-function runItineraryAction(action, id) {
-  if (!isLoggedIn()) return redirectToLogin({ action, id });
-  location.href = pageUrl('templates', { action, id });
-}
-
-$('itin-grid').addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-action]');
-  if (btn) runItineraryAction(btn.dataset.action, btn.dataset.id);
-});
+// UC 11 Dùng lại (popup chọn ngày → clone → Screen 7 + MSG 31), UC 12 Lưu / bỏ lưu (MSG 18 khi lỗi).
+bindReuseSave($('itin-grid'));
 
 /* ---------- Đi theo kiểu của bạn ---------- */
 
 const STYLES = [
-  { icon: '≋', name: 'Biển', sub: 'Phú Quốc, Vũng Tàu', params: { tag: 'bien' }, tone: 'lake' },
-  { icon: '⛰', name: 'Núi', sub: 'Sa Pa, Đà Lạt', params: { tag: 'nui' }, tone: 'pine' },
-  { icon: '⌂', name: 'Phố cổ', sub: 'Hội An, Hà Nội', params: { tag: 'pho-co' }, tone: 'sun' },
-  { icon: '♨', name: 'Ẩm thực', sub: 'Ăn sập phố', params: { tag: 'am-thuc' }, tone: 'coral' },
+  { icon: '≋', name: 'Biển', sub: 'Phú Quốc, Vũng Tàu', params: { tag: 'BEACH' }, tone: 'lake' },
+  { icon: '⛰', name: 'Núi', sub: 'Sa Pa, Đà Lạt', params: { tag: 'MOUNTAIN' }, tone: 'pine' },
+  { icon: '⌂', name: 'Phố cổ', sub: 'Hội An, Hà Nội', params: { tag: 'OLD_TOWN' }, tone: 'sun' },
+  { icon: '♨', name: 'Ẩm thực', sub: 'Ăn sập phố', params: { tag: 'FOOD' }, tone: 'coral' },
   { icon: '▤', name: 'Cuối tuần', sub: '2N1Đ gần thành phố', params: { days: 2 }, tone: 'violet' },
   { icon: '₫', name: 'Tiết kiệm', sub: 'Dưới 2 triệu', params: { budgetMax: 2000000 }, tone: 'lime' },
 ];
@@ -349,14 +351,9 @@ $('cta-create').addEventListener('click', (e) => {
 
 renderWeekendLabel();
 
-// Đăng nhập xong quay lại đây với thao tác đang chờ (CBR 3).
-const pending = takePendingAction();
-if (pending && (pending.action === 'reuse' || pending.action === 'save') && pending.id) {
-  runItineraryAction(pending.action, pending.id);
-}
-
 const opts = { auth: false, silent: true };
-const [destRes, trendRes, itinRes] = await Promise.allSettled([
+const [, destRes, trendRes, itinRes] = await Promise.allSettled([
+  loadSaved(),
   get('/public/destinations?size=6', opts),
   get('/public/trending-destinations', opts),
   get('/public/itineraries?size=6', opts),
@@ -372,6 +369,9 @@ else hideSection('trend-section');
 
 if (itinRes.status === 'fulfilled') renderItineraries(listOf(itinRes.value).map(toItinerary));
 else hideSection('itin-section');
+
+// Đăng nhập xong quay lại đây với ?action=reuse|save&id= → tự làm tiếp thao tác (CBR 3).
+runPendingAction();
 
 // Ô gợi ý cần đủ bảng destinations, không chỉ 6 mục của khối trên. Lỗi thì giữ danh sách đang có.
 get('/public/destinations?size=100', opts)

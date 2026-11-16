@@ -16,7 +16,7 @@ const intParam = (min, max, fallback) => {
   return z.preprocess(emptyToUndefined, fallback === undefined ? base.optional() : base.default(fallback));
 };
 
-/** ?tag=BEACH,FOOD hoặc ?tag=BEACH&tag=FOOD → ['BEACH', 'FOOD'] (chọn nhiều, điều kiện HOẶC). */
+/** ?tag=BEACH,FOOD hoặc ?tag=BEACH&tag=FOOD → ['BEACH', 'FOOD'] (chọn nhiều, điều kiện HOẶC). Mã tag: utils/tags.js; mã lạ = rỗng. */
 const tagList = z.preprocess(
   (v) => {
     if (v === undefined || v === '') return undefined;

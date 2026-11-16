@@ -11,6 +11,7 @@ import itineraryRoutes from './itinerary.routes.js';
 import publicItineraryRoutes from './publicItineraries.routes.js';
 import publicRoutes from './public.routes.js';
 import savedRoutes from './saved.routes.js';
+import expenseRoutes from './expense.routes.js';
 
 const router = Router();
 
@@ -26,6 +27,7 @@ router.use('/', itineraryRoutes);
 router.use('/public/itineraries', publicItineraryRoutes);
 router.use('/public', publicRoutes);
 router.use('/me/saved', savedRoutes);
+router.use('/', expenseRoutes);
 
 if (!env.isProd) {
   router.use('/_example', exampleRoutes);

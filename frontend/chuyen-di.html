@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <link rel="stylesheet" href="css/trip.css">
   <link rel="stylesheet" href="css/trip-form.css">
+  <link rel="stylesheet" href="css/ngan-sach.css">
 </head>
 <!-- Screen 7 Lịch trình chuyến (UC 19) + nút Xóa chuyến (UC 16). Tab Ngân sách là Screen 9 (TP-34).
      Các nút do thẻ khác làm phát sự kiện trên document để thẻ đó tự bắt:
@@ -87,10 +88,8 @@
         </aside>
       </section>
 
-      <!-- Screen 9 Ngân sách: làm ở TP-34, gắn vào phần tử này. -->
-      <section id="panel-budget" class="card" role="tabpanel" hidden>
-        <p class="meta">Màn hình Ngân sách đang được làm (TP-34).</p>
-      </section>
+      <!-- Screen 9 Ngân sách (TP-34): js/pages/ngan-sach.js dựng nội dung khi mở tab. -->
+      <section id="panel-budget" role="tabpanel" hidden></section>
     </div>
   </main>
 
@@ -100,5 +99,6 @@
   <script type="module" src="js/layout.js"></script>
   <script type="module" src="js/pages/chuyen-di.js"></script>
   <script type="module" src="js/trip-actions.js"></script>
+  <script type="module" src="js/pages/ngan-sach.js"></script>
 </body>
 </html>

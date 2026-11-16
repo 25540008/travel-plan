@@ -69,6 +69,7 @@ model Trip {
   coverImage    String?         @map("cover_image") @db.VarChar(500)
   coverColor    String?         @default("purple") @map("cover_color") @db.VarChar(30)
   isPublic      Boolean         @default(false) @map("is_public")
+  tags          String[]        @default([])
   clonedFromId  Int?            @map("cloned_from_id")
   aiItinerary   String?         @map("ai_itinerary")
   createdAt     DateTime        @default(now()) @map("created_at")

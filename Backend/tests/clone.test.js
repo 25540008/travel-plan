@@ -58,6 +58,8 @@ describe('UC 11: Dùng lại lịch trình (Clone) & Xếp hạng điểm đến
               activityDate: new Date('2026-10-10T00:00:00Z'),
               startTime: new Date('1970-01-01T08:00:00Z'),
               endTime: new Date('1970-01-01T11:00:00Z'),
+              latitude: 12.2388,
+              longitude: 109.1967,
               activity: 'Tắm biển Bãi Dài',
             },
             {
@@ -149,6 +151,9 @@ describe('UC 11: Dùng lại lịch trình (Clone) & Xếp hạng điểm đến
       expect(copiedItems[0].activity).toBe('Tắm biển Bãi Dài');
       expect(copiedItems[0].activityDate.toISOString().startsWith('2026-12-05')).toBe(true);
       expect(copiedItems[1].activityDate.toISOString().startsWith('2026-12-06')).toBe(true);
+      // Toạ độ hoạt động được chép theo để Screen 7 vẫn ghim được bản đồ
+      expect(Number(copiedItems[0].latitude)).toBeCloseTo(12.2388, 4);
+      expect(Number(copiedItems[0].longitude)).toBeCloseTo(109.1967, 4);
 
       const copiedExpenses = await prisma.expense.findMany({
         where: { tripId: newTripId },
@@ -157,7 +162,37 @@ describe('UC 11: Dùng lại lịch trình (Clone) & Xếp hạng điểm đến
     });
   });
 
+  describe('Kiểm tra ngày bắt đầu khi clone', () => {
+    it('ngày không tồn tại (2026-13-45) trả 400 MSG 3, không phải 500', async () => {
+      const res = await request(app)
+        .post(`/api/trips/${publicTrip.id}/clone`)
+        .set('Authorization', `Bearer ${tokenCloner}`)
+        .send({ startDate: '2026-13-45' });
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe('MSG 3');
+    });
+
+    it('không gửi ngày → thứ Bảy gần nhất theo giờ Việt Nam', async () => {
+      const { nextSaturday } = await import('../src/services/clone.service.js');
+      // 17:30 UTC thứ Sáu 20/11/2026 = 00:30 thứ Bảy 21/11 giờ VN → thứ Bảy tuần sau 28/11
+      expect(nextSaturday(new Date('2026-11-20T17:30:00Z')).toISOString().slice(0, 10)).toBe('2026-11-28');
+      // 08:00 UTC thứ Hai 16/11/2026 → thứ Bảy 21/11
+      expect(nextSaturday(new Date('2026-11-16T08:00:00Z')).toISOString().slice(0, 10)).toBe('2026-11-21');
+    });
+  });
+
   describe('GET /api/public/trending-destinations (Screen 1)', () => {
+    it('xếp hạng trên tất cả điểm đến rồi mới lấy 8, fromPrice là số', async () => {
+      const res = await request(app).get('/api/public/trending-destinations');
+      expect(res.status).toBe(200);
+      const nhaTrang = res.body.find((d) => d.id === destination.id);
+      // Nha Trang có chuyến công khai mới tạo và lượt dùng lại → phải lọt top dù được tạo sau các điểm đến khác
+      expect(nhaTrang).toBeDefined();
+      expect(nhaTrang.fromPrice).toBe(3500000);
+      expect(nhaTrang.itineraryCount).toBeGreaterThanOrEqual(1);
+      expect(res.body[0].score).toBeGreaterThanOrEqual(res.body[res.body.length - 1].score);
+    });
+
     it('Lấy danh sách điểm đến thịnh hành thành công', async () => {
       const res = await request(app).get('/api/public/trending-destinations');
 

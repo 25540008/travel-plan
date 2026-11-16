@@ -10,15 +10,6 @@ const itemParamsSchema = z.object({
   itemId: z.coerce.number().int().positive(),
 });
 
-// GET /api/public/weather?lat=&lng=&days=
-export const weatherSchema = {
-  query: z.object({
-    lat: z.coerce.number({ error: 'MSG 3|Giá trị vĩ độ không đúng định dạng.' }),
-    lng: z.coerce.number({ error: 'MSG 3|Giá trị kinh độ không đúng định dạng.' }),
-    days: z.coerce.number().int().positive().default(7),
-  }),
-};
-
 // GET /api/trips/:id/itinerary?day=
 export const getItinerarySchema = {
   params: idParamSchema,

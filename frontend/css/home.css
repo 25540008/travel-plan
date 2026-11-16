@@ -145,3 +145,4 @@ a.trend-item:hover { background: var(--mist); }
   .cta-inner { padding: var(--space-8) var(--space-5); }
   .cta-inner h2 { font-size: var(--fs-h2); }
 }
+.itin-save.is-saved svg { fill: var(--coral); stroke: var(--coral); }

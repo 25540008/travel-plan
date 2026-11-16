@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { AppError } from '../utils/AppError.js';
 
@@ -59,14 +60,22 @@ export async function toggleSaveItem(userId, { itemType, itemId }) {
     };
   }
 
-  // Chưa lưu -> Lưu mới
-  const newSave = await prisma.savedItem.create({
-    data: {
-      userId: numericUserId,
-      itemType,
-      itemId: numericItemId,
-    },
-  });
+  // Chưa lưu -> Lưu mới. Bấm 2 lần gần như cùng lúc: lần sau đụng unique (P2002) thì coi như đã lưu.
+  let newSave;
+  try {
+    newSave = await prisma.savedItem.create({
+      data: {
+        userId: numericUserId,
+        itemType,
+        itemId: numericItemId,
+      },
+    });
+  } catch (err) {
+    if (!(err instanceof Prisma.PrismaClientKnownRequestError) || err.code !== 'P2002') throw err;
+    newSave = await prisma.savedItem.findUnique({
+      where: { userId_itemType_itemId: { userId: numericUserId, itemType, itemId: numericItemId } },
+    });
+  }
 
   return {
     saved: true,
@@ -122,7 +131,8 @@ export async function getSavedItems(userId, { itemType }) {
   const [trips, destinations] = await Promise.all([
     tripIds.length > 0
       ? prisma.trip.findMany({
-          where: { id: { in: tripIds } },
+          // Chuyến đã chuyển sang riêng tư (của người khác) thì không trả chi tiết nữa (CBR 8)
+          where: { id: { in: tripIds }, OR: [{ isPublic: true }, { userId: Number(userId) }] },
           select: {
             id: true,
             title: true,
