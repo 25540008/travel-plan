@@ -6,27 +6,167 @@
   <title>Travelplan · Lên kèo. Chốt lịch. Xách balo đi.</title>
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/trips.css">
+  <link rel="stylesheet" href="css/home.css">
 </head>
+<!-- Screen 1 Trang chủ (UC 6). Dữ liệu và hành vi ở js/pages/trang-chu.js. -->
 <body data-page="home">
   <div id="site-header"></div>
 
-  <!-- Screen 1 Trang chủ: nội dung làm ở TP-38. Hiện chỉ là khung để kiểm tra header/footer. -->
-  <main class="container section">
-    <p class="eyebrow">Travelplan</p>
-    <h1 class="display">Lên kèo. Chốt lịch.<br>Xách balo đi.</h1>
-    <p class="meta">Khám phá lịch trình người khác đã đi thật, dùng lại chỉ với một cú bấm.</p>
-    <p class="meta" id="api-status">Đang kiểm tra kết nối backend…</p>
+  <main>
+    <section class="hero">
+      <svg class="hero-art" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <rect width="1440" height="420" fill="#a8916f"/>
+        <circle cx="1060" cy="150" r="62" fill="#d9c8a4"/>
+        <circle cx="1060" cy="150" r="46" fill="#e8dcc0"/>
+        <path d="M0 190 Q180 150 360 180 T720 170 T1080 176 T1440 160 V420 H0Z" fill="#8fa38d"/>
+        <path d="M0 230 Q200 200 420 222 T860 214 T1440 206 V420 H0Z" fill="#6f8f7b"/>
+        <ellipse cx="760" cy="262" rx="230" ry="16" fill="#b9cfd3"/>
+        <path d="M0 280 Q240 252 520 274 T1040 268 T1440 262 V420 H0Z" fill="#4f7863"/>
+        <path d="M0 330 Q300 300 640 324 T1440 316 V420 H0Z" fill="#33584a"/>
+        <g fill="#1f4337">
+          <path d="M70 420 L104 250 L138 420Z"/><path d="M150 420 L172 300 L194 420Z"/>
+          <path d="M560 420 L586 290 L612 420Z"/><path d="M930 420 L962 230 L994 420Z"/>
+          <path d="M1210 420 L1250 200 L1290 420Z"/><path d="M1320 420 L1344 290 L1368 420Z"/>
+        </g>
+      </svg>
+      <div class="container hero-inner">
+        <a class="hero-hot" id="hot-chip" hidden>
+          <span class="hero-hot-dot" aria-hidden="true">◎</span>
+          <span>Đang hot cuối tuần này: <strong id="hot-name"></strong></span>
+        </a>
+        <h1 class="display">Lên kèo. Chốt lịch.<br>Xách balo đi.</h1>
+        <p class="hero-lead">Khám phá lịch trình người khác đã đi thật, dùng lại chỉ với một cú bấm, rồi tự xếp giờ và quỹ cho cả nhóm.</p>
+      </div>
+    </section>
+
+    <!-- Khung tìm kiếm (UC 6 · B3, B4) -->
+    <div class="container">
+      <form class="search-panel card card-float" id="search-form" novalidate>
+        <div class="search-tabs" role="tablist" aria-label="Kiểu tìm kiếm">
+          <button type="button" role="tab" data-mode="templates" aria-selected="true">Lịch trình mẫu</button>
+          <button type="button" role="tab" data-mode="destinations" aria-selected="false">Điểm đến</button>
+          <button type="button" role="tab" data-mode="create" aria-selected="false">Tự lên chuyến mới</button>
+        </div>
+        <div class="search-fields">
+          <div class="search-field search-dest">
+            <label for="q-dest">Bạn muốn đi đâu?</label>
+            <input id="q-dest" name="destination" autocomplete="off" placeholder="Đà Lạt, Hội An, Phú Quốc…"
+              role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="dest-suggest">
+            <ul class="suggest-list" id="dest-suggest" role="listbox" hidden></ul>
+          </div>
+          <div class="search-field" data-hide-for="destinations">
+            <label for="q-start">Ngày khởi hành</label>
+            <input id="q-start" name="start" type="date">
+          </div>
+          <div class="search-field" data-hide-for="destinations">
+            <label for="q-days">Số ngày</label>
+            <select id="q-days" name="days">
+              <option value="1">1 ngày</option>
+              <option value="2">2 ngày 1 đêm</option>
+              <option value="3" selected>3 ngày 2 đêm</option>
+              <option value="4">4 ngày 3 đêm</option>
+              <option value="5">5 ngày trở lên</option>
+            </select>
+          </div>
+          <div class="search-field" data-hide-for="destinations create">
+            <label for="q-budget">Ngân sách</label>
+            <select id="q-budget" name="budgetMax">
+              <option value="2000000">Dưới 2 triệu</option>
+              <option value="5000000" selected>Dưới 5 triệu</option>
+              <option value="10000000">Dưới 10 triệu</option>
+              <option value="">Không giới hạn</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary search-submit" type="submit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <span id="search-label">Tìm lịch trình</span>
+        </button>
+      </form>
+
+      <!-- Dải tính năng -->
+      <ul class="feature-strip">
+        <li><span class="feature-icon" aria-hidden="true">▦</span><div><strong>Lịch theo từng ngày</strong><span>Giờ giấc, địa điểm, ghi chú</span></div></li>
+        <li><span class="feature-icon" aria-hidden="true">⧉</span><div><strong>Dùng lại lịch trình</strong><span>Chép trọn chuyến người khác</span></div></li>
+        <li><span class="feature-icon" aria-hidden="true">◷</span><div><strong>Báo trùng giờ</strong><span>Không lỡ hoạt động nào</span></div></li>
+        <li><span class="feature-icon" aria-hidden="true">▣</span><div><strong>Quỹ chuyến đi</strong><span>Biết mỗi ngày còn tiêu bao nhiêu</span></div></li>
+      </ul>
+    </div>
+
+    <!-- Điểm đến được yêu thích: /api/public/destinations?size=6 -->
+    <section class="container home-section" id="dest-section">
+      <div class="section-head">
+        <div><p class="eyebrow">Điểm đến</p><h2>Điểm đến được yêu thích</h2></div>
+        <a class="section-link" data-link="destinations">Xem tất cả điểm đến →</a>
+      </div>
+      <div class="dest-grid" id="dest-grid" aria-busy="true">
+        <div class="dest-card skeleton"></div><div class="dest-card skeleton"></div><div class="dest-card skeleton"></div>
+        <div class="dest-card skeleton"></div><div class="dest-card skeleton"></div>
+      </div>
+    </section>
+
+    <!-- Cuối tuần này đi đâu ta?: /api/public/trending-destinations -->
+    <section class="container home-section" id="trend-section">
+      <div class="trend-box card">
+        <div class="trend-intro">
+          <p class="eyebrow" id="weekend-label">Cuối tuần</p>
+          <h2>Cuối tuần này đi đâu ta?</h2>
+          <p class="meta">Xếp hạng theo số chuyến cộng đồng đã lên kèo cho thứ Bảy và Chủ nhật tới. Đã ẩn danh.</p>
+        </div>
+        <ol class="trend-list" id="trend-list" aria-busy="true">
+          <li class="trend-item skeleton"></li><li class="trend-item skeleton"></li><li class="trend-item skeleton"></li>
+          <li class="trend-item skeleton"></li><li class="trend-item skeleton"></li><li class="trend-item skeleton"></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Lịch trình hot từ cộng đồng: /api/public/itineraries?size=6 -->
+    <section class="container home-section" id="itin-section">
+      <div class="section-head">
+        <div><p class="eyebrow">Lịch trình mẫu</p><h2>Lịch trình hot từ cộng đồng</h2></div>
+        <a class="section-link" data-link="templates">Xem thêm lịch trình →</a>
+      </div>
+      <div class="trip-grid" id="itin-grid" aria-busy="true">
+        <div class="trip-card skeleton"></div><div class="trip-card skeleton"></div><div class="trip-card skeleton"></div>
+      </div>
+      <div class="empty-state card" id="itin-empty" hidden>
+        <p></p>
+        <a class="btn btn-primary" id="itin-empty-cta">Tự lên kế hoạch</a>
+      </div>
+    </section>
+
+    <!-- Đi theo kiểu của bạn -->
+    <section class="container home-section">
+      <h2>Đi theo kiểu của bạn</h2>
+      <div class="style-grid" id="style-grid"></div>
+    </section>
+
+    <!-- Khối kêu gọi -->
+    <section class="container home-section">
+      <div class="cta-box">
+        <svg class="cta-art" viewBox="0 0 1280 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="1280" height="360" fill="#3f6a5d"/>
+          <path d="M760 360 Q780 120 860 90 Q930 70 950 200 L960 360Z" fill="#2c5246"/>
+          <path d="M1000 360 Q1010 80 1100 40 Q1190 20 1200 180 L1210 360Z" fill="#244539"/>
+          <rect y="250" width="1280" height="110" fill="#33594d"/>
+          <path d="M640 360 L640 300 L670 270 L700 300 L700 360Z" fill="#6b3a26"/>
+        </svg>
+        <div class="cta-inner">
+          <h2>Chuyến tiếp theo của bạn<br>bắt đầu từ đây</h2>
+          <p>Tạo chuyến đi, xếp lịch từng ngày và ghi quỹ chung. Miễn phí, chỉ bạn thấy chuyến của mình.</p>
+          <div class="cta-actions">
+            <a class="btn btn-primary" id="cta-create">Tạo chuyến đi</a>
+            <a class="btn btn-secondary" data-link="templates">Xem lịch trình mẫu</a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <div id="site-footer"></div>
 
   <script type="module" src="js/layout.js"></script>
-  <script type="module">
-    import { get } from './js/api.js';
-    const el = document.getElementById('api-status');
-    get('/health', { auth: false, silent: true })
-      .then(() => (el.textContent = 'Backend: đã kết nối ✓'))
-      .catch(() => (el.textContent = 'Backend: chưa chạy (npm run dev trong Backend/)'));
-  </script>
+  <script type="module" src="js/pages/trang-chu.js"></script>
 </body>
 </html>
