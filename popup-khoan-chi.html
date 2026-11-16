@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Screen 14 · Popup Thêm / sửa khoản chi</title>
+    <style>
+        :root {
+            --ink: #0f2d2a;
+            --mut: #6b7c78;
+            --line: #dbe3df;
+            --org: #d9512c;
+            --red: #d8392b;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font: 14px/1.4 system-ui, "Segoe UI", sans-serif;
+            color: var(--ink);
+            background: #eef3ec;
+        }
+        button, input { font: inherit; }
+        button { cursor: pointer; }
+        
+        .demo { padding: 24px; }
+        .demo button {
+            margin-right: 8px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+        
+        .bd {
+            position: fixed;
+            inset: 0;
+            background: #0f2d2a99;
+            display: grid;
+            place-items: center;
+            padding: 16px;
+            z-index: 5;
+        }
+        .bd[hidden] { display: none; }
+        
+        .md {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 460px;
+            max-height: 100%;
+            overflow: auto;
+            padding: 22px;
+            box-shadow: 0 20px 60px #0005;
+        }
+        .md h2 { margin: 0 0 14px; font-size: 18px; }
+        
+        label { display: block; font-weight: 600; font-size: 12px; margin: 12px 0 5px; }
+        label i { color: var(--org); font-style: normal; }
+        
+        .f {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #fff;
+        }
+        .f:focus { outline: 2px solid #2e6b5755; border-color: #2e6b57; }
+        .bad { border-color: var(--red) !important; }
+        .er { color: var(--red); font-size: 12px; margin: 4px 0 0; min-height: 0; }
+        .er:empty { display: none; }
+        
+        .cnt { float: right; font-weight: 400; color: var(--mut); }
+        .amt { position: relative; }
+        .amt span {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--mut);
+            font-weight: 700;
+        }
+        .amt .f { padding-right: 50px; font-weight: 700; font-size: 16px; }
+        
+        .cats { display: flex; gap: 6px; flex-wrap: wrap; }
+        .cat {
+            border: 1px solid var(--line);
+            background: #fff;
+            border-radius: 99px;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        .cat.on {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--ink);
+        }
+        
+        .warn {
+            background: #fff4d6;
+            border: 1px solid #f2b84b;
+            color: #7a5200;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-top: 14px;
+            font-size: 13px;
+        }
+        .warn[hidden] { display: none; }
+        
+        .act { display: flex; gap: 8px; margin-top: 18px; align-items: center; }
+        .act .sp { flex: 1; }
+        
+        .pri {
+            background: var(--org);
+            color: #fff;
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 22px;
+            font-weight: 700;
+        }
+        .sec {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 18px;
+        }
+        .dng {
+            background: none;
+            border: 0;
+            color: var(--red);
+            font-weight: 700;
+            padding: 10px 6px;
+        }
+        
+        .cf { max-width: 360px; }
+        .cf p { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--ink);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 12px;
+            z-index: 30;
+            max-width: 90%;
+            font-size: 12px;
+            display: none;
+        }
+        
+        @media(max-width: 600px) {
+            .bd { align-items: end; padding: 0; }
+            .md { border-radius: 16px 16px 0 0; max-width: none; max-height: 92%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo" id="demo" hidden>
+        <b>Screen 14 (chạy riêng)</b>
+        <p>
+            <button id="dAdd">Mở: Thêm khoản chi</button>
+            <button id="dEdit">Mở: Sửa khoản chi</button>
+        </p>
+    </div>
+
+    <div class="bd" id="bd" hidden>
+        <div class="md" role="dialog" aria-modal="true" aria-labelledby="ttl">
+            <h2 id="ttl"></h2>
+            
+            <label for="desc">Mô tả <i>*</i><span class="cnt" id="cnt">0/200</span></label>
+            <input class="f" id="desc" maxlength="200" autocomplete="off" placeholder="VD: Lẩu gà lá é">
+            <p class="er" id="eDesc"></p>
+            
+            <label for="amt">Số tiền <i>*</i></label>
+            <div class="amt">
+                <input class="f" id="amt" inputmode="numeric" autocomplete="off" placeholder="0">
+                <span>VND</span>
+            </div>
+            <p class="er" id="eAmt"></p>
+            
+            <label>Loại <i>*</i></label>
+            <div class="cats" id="cats"></div>
+            <p class="er" id="eCat"></p>
+            
+            <label for="date">Ngày <i>*</i></label>
+            <input class="f" type="date" id="date">
+            <p class="er" id="eDate"></p>
+            
+            <div class="warn" id="warn" role="alert" hidden></div>
+            
+            <div class="act">
+                <button class="dng" id="del" hidden>Xóa</button>
+                <span class="sp"></span>
+                <button class="sec" id="cancel">Hủy</button>
+                <button class="pri" id="save">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bd" id="cfBd" hidden style="z-index:10">
+        <div class="md cf" role="alertdialog" aria-modal="true">
+            <p>Bạn có chắc muốn xóa mục này?</p>
+            <div class="act">
+                <span class="sp"></span>
+                <button class="sec" id="cfNo">Hủy</button>
+                <button class="pri" id="cfYes">Xóa</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const CATS = { AU: 'Ăn uống', DC: 'Di chuyển', LT: 'Lưu trú', TQ: 'Tham quan', MS: 'Mua sắm', KH: 'Khác' };
+        const $ = id => document.getElementById(id);
+        const fmt = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        const inParent = window.parent !== window;
+        
+        const DEF = { trip: { start: '2026-10-23', end: '2026-10-25' }, today: '2026-10-24', budget: 5000000, spentOther: 2780000, expense: null };
+        let ctx = DEF, cat = '';
+        
+        const iso = (d, k) => { const t = new Date(d + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() + k); return t.toISOString().slice(0, 10); };
+        const vn = d => d.split('-').reverse().join('/');
+        const range = () => [iso(ctx.trip.start, -30), iso(ctx.trip.end, 7)];
+        const amount = () => +$('amt').value.replace(/\D/g, '');
+
+        function open(c) {
+            ctx = c;
+            const x = c.expense;
+            const [mn, mx] = range();
+            
+            $('ttl').textContent = x ? 'Sửa khoản chi' : 'Thêm khoản chi';
+            $('del').hidden = !x;
+            $('desc').value = x ? x.desc : '';
+            $('amt').value = x ? fmt(x.amount) : '';
+            cat = x ? x.cat : '';
+            
+            $('date').min = mn;
+            $('date').max = mx;
+            $('date').value = x ? x.date : (c.today < mn ? mn : c.today > mx ? mx : c.today);
+            
+            $('cats').innerHTML = Object.entries(CATS).map(([k, v]) => `<button type="button" class="cat ${k == cat ? 'on' : ''}" data-k="${k}">${v}</button>`).join('');
+            
+            clearErr();
+            upd();
+            
+            $('warn').style.background = '#fff4d6';
+            $('warn').style.color = '#7a5200';
+            $('warn').style.borderColor = '#f2b84b';
+            
+            $('bd').hidden = false;
+            $('desc').focus();
+        }
+
+        function clearErr() {
+            ['Desc', 'Amt', 'Cat', 'Date'].forEach(k => $('e' + k).textContent = '');
+            document.querySelectorAll('.bad').forEach(e => e.classList.remove('bad'));
+        }
+
+        function upd() {
+            $('cnt').textContent = $('desc').value.length + '/200';
+            const over = ctx.spentOther + amount() - ctx.budget;
+            const w = $('warn');
+            w.hidden = !(amount() > 0 && over > 0);
+            if (!w.hidden) {
+                w.textContent = 'Khoản này làm vượt ngân sách ' + fmt(over) + 'đ. Vẫn lưu?';
+                w.style.background = '#fff4d6';
+                w.style.color = '#7a5200';
+                w.style.borderColor = '#f2b84b';
+            }
+        }
+
+        $('desc').oninput = upd;
+        $('amt').oninput = e => {
+            const d = e.target.value.replace(/\D/g, '').slice(0, 15);
+            e.target.value = d ? fmt(+d) : '';
+            upd();
+        };
+        $('date').onchange = upd;
+        $('cats').onclick = e => {
+            const b = e.target.closest('.cat');
+            if (!b) return;
+            cat = b.dataset.k;
+            document.querySelectorAll('.cat').forEach(x => x.classList.toggle('on', x == b));
+            $('eCat').textContent = '';
+        };
+
+        function save() {
+            if ($('save').disabled) return;
+            clearErr();
+            const errs = [];
+            const d = $('desc').value.trim();
+            const [mn, mx] = range();
+            const dt = $('date').value;
+            
+            const bad = (id, eid, m) => {
+                errs.push(id);
+                $(eid).textContent = m;
+                if (id != 'cats') $(id).classList.add('bad');
+            };
+            
+            if (!d) bad('desc', 'eDesc', 'Vui lòng nhập mô tả.');
+            else if (d.length > 200) bad('desc', 'eDesc', 'Mô tả tối đa 200 ký tự.');
+            
+            if (!(amount() > 0)) bad('amt', 'eAmt', 'Số tiền phải lớn hơn 0.');
+            if (!cat) { errs.push('cats'); $('eCat').textContent = 'Vui lòng chọn loại.'; }
+            if (!dt || dt < mn || dt > mx) bad('date', 'eDate', `Ngày phải từ ${vn(mn)} đến ${vn(mx)}.`);
+            
+            if (errs.length) {
+                (errs[0] == 'cats' ? document.querySelector('.cat') : $(errs[0])).focus();
+                return;
+            }
+            
+            $('save').disabled = true;
+            $('save').textContent = 'Đang lưu...';
+            
+            send({ type: 'save', expense: { id: ctx.expense ? ctx.expense.id : null, desc: d, amount: amount(), cat, date: dt } });
+        }
+
+        function send(m) {
+            if (inParent) { parent.postMessage(m, '*'); return; }
+            $('bd').hidden = true;
+            const t = $('toast');
+            t.textContent = '[chạy riêng] ' + JSON.stringify(m);
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3500);
+        }
+
+        $('save').onclick = save;
+        $('cancel').onclick = () => inParent ? send({ type: 'close' }) : ($('bd').hidden = true);
+        $('bd').onclick = e => { if (e.target == $('bd')) $('cancel').onclick(); };
+        
+        $('del').onclick = () => { $('cfBd').hidden = false; $('cfYes').focus(); };
+        $('cfNo').onclick = () => $('cfBd').hidden = true;
+        $('cfYes').onclick = () => {
+            $('cfYes').disabled = true;
+            $('cfYes').textContent = 'Đang xóa...';
+            $('cfBd').hidden = true;
+            send({ type: 'delete', id: ctx.expense.id });
+        };
+        
+        document.addEventListener('keydown', e => {
+            if (e.key == 'Escape') {
+                if (!$('cfBd').hidden) $('cfNo').click();
+                else $('cancel').click();
+            }
+            if (e.key == 'Enter' && e.target.tagName == 'INPUT' && $('cfBd').hidden) save();
+        });
+        
+        window.addEventListener('message', e => {
+            if (e.data && e.data.type == 'init') {
+                open(e.data);
+                $('save').disabled = false;
+                $('save').textContent = 'Lưu';
+                $('cfYes').disabled = false;
+                $('cfYes').textContent = 'Xóa';
+            }
+            if (e.data && e.data.type == 'error') {
+                const w = $('warn');
+                w.hidden = false;
+                w.textContent = e.data.message;
+                w.style.background = '#fde4e0';
+                w.style.color = '#8a1f12';
+                w.style.borderColor = '#8a1f12';
+                
+                $('save').disabled = false;
+                $('save').textContent = 'Lưu';
+                if (!$('cfBd').hidden || ctx.expense) {
+                    $('cfYes').disabled = false;
+                    $('cfYes').textContent = 'Xóa';
+                }
+            }
+        });
+        
+        if (!inParent) {
+            $('demo').hidden = false;
+            $('dAdd').onclick = () => open({ ...DEF, expense: null });
+            $('dEdit').onclick = () => open({ ...DEF, spentOther: 2780000 - 420000, expense: { id: 7, desc: 'Lẩu gà lá é Tao Ngộ', amount: 420000, cat: 'AU', date: '2026-10-24' } });
+            open({ ...DEF, expense: null });
+        }
+    </script>
+</body>
+</html>

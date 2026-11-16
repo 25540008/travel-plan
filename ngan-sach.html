@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Screen 9 · Ngân sách</title>
+    <style>
+        :root {
+            --ink: #0f2d2a;
+            --bg: #eef3ec;
+            --mut: #6b7c78;
+            --line: #e3e9e5;
+            --org: #d9512c;
+            --yel: #f2b84b;
+            --grn: #3ecf8e;
+            --red: #ff6b5b;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font: 14px/1.4 system-ui, "Segoe UI", sans-serif;
+        }
+        button { font: inherit; cursor: pointer; color: inherit; }
+        
+        nav {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 14px 16px 4px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: 15px;
+            margin-right: 14px;
+        }
+        .logo i {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: #10302c;
+            display: grid;
+            place-items: center;
+            font-style: normal;
+            font-size: 15px;
+        }
+        nav a {
+            color: var(--mut);
+            text-decoration: none;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 99px;
+        }
+        nav a.on {
+            background: #dfe9e3;
+            color: var(--ink);
+            font-weight: 700;
+        }
+        .av {
+            margin-left: auto;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #cfe1e8;
+            display: grid;
+            place-items: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        
+        main {
+            max-width: 1100px;
+            margin: 16px auto;
+            padding: 0 16px;
+            display: grid;
+            gap: 16px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+        }
+        
+        .head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .head .img {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            background: linear-gradient(#f5c98a, #2f6b57);
+        }
+        .head h1 { margin: 0; font-size: 20px; }
+        .head small { color: var(--mut); }
+        
+        .tabs {
+            margin-left: auto;
+            background: #eef3ec;
+            border-radius: 10px;
+            padding: 3px;
+            display: flex;
+        }
+        .tabs a {
+            padding: 6px 14px;
+            border-radius: 8px;
+            color: var(--mut);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .tabs a.on {
+            background: #fff;
+            color: var(--ink);
+            box-shadow: 0 1px 3px #0002;
+        }
+        
+        .fund {
+            background: #10302c;
+            color: #fff;
+            display: grid;
+            grid-template-columns: 1fr 200px 200px;
+            gap: 12px;
+        }
+        .fund .l { grid-column: 1; }
+        .fund .s {
+            background: #1b4540;
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .fund .s small { color: #a9c2bb; display: block; }
+        .fund .s b { font-size: 20px; }
+        
+        .pill {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 99px;
+            color: var(--ink);
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .big {
+            font-size: 34px;
+            font-weight: 800;
+            margin: 10px 0 4px;
+        }
+        .big span {
+            font-size: 13px;
+            font-weight: 400;
+            color: #a9c2bb;
+        }
+        
+        .bar {
+            height: 8px;
+            border-radius: 9px;
+            background: #ffffff26;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        .bar i {
+            display: block;
+            height: 100%;
+            border-radius: 9px;
+            transition: width .3s;
+        }
+        
+        .ghost {
+            background: transparent;
+            border: 1px solid #ffffff55;
+            color: #fff;
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+        
+        #bEdit {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 10px 0 4px;
+        }
+        #bEdit input {
+            font: inherit;
+            font-size: 22px;
+            font-weight: 700;
+            width: 210px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 2px solid #fff3;
+            background: #fff;
+            color: var(--ink);
+        }
+        #bEdit .ok {
+            background: var(--org);
+            border: 0;
+            color: #fff;
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-weight: 700;
+        }
+        #bEdit .no {
+            background: none;
+            border: 0;
+            color: #cfe;
+            text-decoration: underline;
+        }
+        #bEdit[hidden] { display: none; }
+        .err {
+            color: var(--red);
+            font-size: 12px;
+            width: 100%;
+            margin: 0;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 16px;
+        }
+        .card h2 { margin: 0 0 2px; font-size: 16px; }
+        .card .sub { color: var(--mut); font-size: 12px; margin: 0 0 12px; }
+        
+        .chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            height: 190px;
+            border-bottom: 1px solid var(--line);
+            padding-top: 10px;
+        }
+        .col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            height: 100%;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .col i {
+            display: block;
+            width: 100%;
+            max-width: 56px;
+            border-radius: 6px 6px 0 0;
+            min-height: 2px;
+        }
+        
+        .lbls {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--mut);
+            margin-top: 6px;
+        }
+        .lbls span { flex: 1; text-align: center; }
+        
+        .cat { margin-bottom: 10px; font-size: 12px; }
+        .cat .t {
+            height: 6px;
+            background: #eef3ec;
+            border-radius: 9px;
+            margin-top: 3px;
+        }
+        .cat .t i {
+            display: block;
+            height: 100%;
+            border-radius: 9px;
+        }
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            margin-right: 6px;
+        }
+        
+        .big1 {
+            background: #eef3ec;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        
+        .chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .chip {
+            border: 1px solid var(--line);
+            background: #fff;
+            border-radius: 99px;
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+        .chip.on {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--ink);
+        }
+        
+        .add {
+            background: var(--org);
+            color: #fff;
+            border: 0;
+            border-radius: 99px;
+            padding: 7px 16px;
+            font-weight: 700;
+            margin-left: auto;
+        }
+        
+        .gh {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--mut);
+            padding: 12px 0 6px;
+            border-bottom: 1px solid var(--line);
+        }
+        
+        .it {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            background: none;
+            border: 0;
+            border-bottom: 1px solid var(--line);
+            padding: 10px 0;
+            text-align: left;
+        }
+        .it:hover { background: #f6f9f6; }
+        .ic {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            font-size: 10px;
+            font-weight: 800;
+        }
+        .it .n { flex: 1; }
+        .it small { color: var(--mut); display: block; }
+        .it b { font-weight: 700; }
+        
+        #banner[hidden] { display: none; }
+        .banner {
+            max-width: 1100px;
+            margin: 8px auto 0;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+        .banner.ld { color: var(--mut); }
+        .banner.err { background: #fde4e0; color: #8a1f12; }
+        .banner button {
+            margin-left: 8px;
+            border: 1px solid #8a1f12;
+            background: none;
+            border-radius: 8px;
+            padding: 3px 10px;
+            color: inherit;
+        }
+        
+        body.busy main { opacity: .55; pointer-events: none; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--ink);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 99px;
+            opacity: 0;
+            transition: .3s;
+            pointer-events: none;
+            z-index: 30;
+        }
+        .toast.on { opacity: 1; }
+        
+        #pop {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            z-index: 20;
+            background: transparent;
+        }
+        
+        @media(max-width: 800px) {
+            .fund, .grid { grid-template-columns: 1fr; }
+            .tabs { margin-left: 0; }
+            nav a:not(.on) { display: none; }
+            .big { font-size: 28px; }
+            .add { margin-left: 0; }
+            .chart, .lbls { gap: 6px; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo"><i>🧭</i>travelplan</div>
+        <a href="#">Trang chủ</a>
+        <a href="#">Khám phá</a>
+        <a class="on" href="#">Chuyến đi của tôi</a>
+        <div class="av">DD</div>
+    </nav>
+    <div id="banner" hidden></div>
+    
+    <main>
+        <section class="card head">
+            <div class="img"></div>
+            <div>
+                <h1 id="tName"></h1>
+                <small id="tMeta"></small>
+            </div>
+            <div class="tabs">
+                <a href="#">Lịch trình</a>
+                <a class="on" href="#">Ngân sách</a>
+            </div>
+        </section>
+
+        <section class="card fund" id="fund">
+            <div class="l">
+                <div class="row">
+                    <div>
+                        <small style="color:#a9c2bb">Quỹ chuyến đi</small>
+                        <span class="pill" id="pill"></span>
+                    </div>
+                    <button class="ghost" id="bBtn">Sửa ngân sách</button>
+                </div>
+                <div id="bView" class="big">
+                    <span id="spent" style="font-size:34px;font-weight:800;color:#fff"></span>
+                    <span>đã chi / <span id="budget"></span></span>
+                </div>
+                <div id="bEdit" hidden>
+                    <input id="bIn" inputmode="numeric" autocomplete="off" aria-label="Ngân sách mới">
+                    <b>đ</b>
+                    <button class="ok" id="bSave">Lưu</button>
+                    <button class="no" id="bCancel">Hủy</button>
+                    <p class="err" id="bErr"></p>
+                </div>
+                <div class="bar"><i id="fill"></i></div>
+                <div class="row">
+                    <small id="pct"></small>
+                    <small id="left"></small>
+                </div>
+            </div>
+            <div class="s">
+                <small>Mỗi ngày còn tiêu được</small>
+                <b id="perDay"></b>
+                <small id="perDayN"></small>
+            </div>
+            <div class="s">
+                <small>Trung bình mỗi ngày</small>
+                <b id="avg"></b>
+                <small id="avgN"></small>
+            </div>
+        </section>
+
+        <div class="grid">
+            <section class="card">
+                <h2>Chi theo ngày</h2>
+                <p class="sub">Gồm cả khoản trả trước chuyến đi.</p>
+                <div class="chart" id="chart"></div>
+                <div class="lbls" id="lbls"></div>
+            </section>
+            
+            <section class="card">
+                <h2>Chi theo loại</h2>
+                <p class="sub">&nbsp;</p>
+                <div id="cats"></div>
+                <div class="big1" id="top"></div>
+            </section>
+        </div>
+
+        <section class="card">
+            <div class="chips" id="chips">
+                <h2 style="margin-right:auto">Khoản chi</h2>
+            </div>
+            <div id="list"></div>
+        </section>
+    </main>
+    
+    <div class="toast" id="toast"></div>
+    <iframe id="pop" hidden title="Thêm / sửa khoản chi"></iframe>
+
+    <script>
+        /* ===== Cấu hình & trạng thái ===== */
+        const TODAY = new URLSearchParams(location.search).get('today') || (d => new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10))(new Date());
+        const CATS = {
+            LT: ['Lưu trú', '#6b4fbb', '#e7e0f6'],
+            DC: ['Di chuyển', '#2a7ba0', '#dcebf2'],
+            AU: ['Ăn uống', '#d9512c', '#fbe3da'],
+            TQ: ['Tham quan', '#2e6b57', '#dcebe5'],
+            MS: ['Mua sắm', '#d49a1c', '#f8ecd0'],
+            KH: ['Khác', '#9aa9a5', '#e8eceb']
+        };
+        const CODE = { LT: 'LT', DC: 'DC', AU: 'AU', TQ: 'TQ', MS: 'MS', KH: 'KH' };
+        
+        let TRIP = null; 
+        let state = { budget: 0, spent: null, exp: [], filter: 'ALL' };
+
+        const $ = id => document.getElementById(id);
+        const fmt = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        const vnd = n => fmt(n) + 'đ';
+        const ms = d => Date.UTC(...d.split('-').map((x, i) => i == 1 ? x - 1 : +x));
+        const dayNo = d => Math.round((ms(d) - ms(TRIP.start)) / 864e5) + 1;
+        let TOTAL = 0;
+        const WD = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+        const dm = d => { const [y, m, x] = d.split('-'); return x + '/' + m };
+        const wd = d => WD[new Date(ms(d)).getUTCDay()];
+        const short = n => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',').replace(',0', '') + 'tr' : n >= 1000 ? Math.round(n / 1000) + 'k' : String(n);
+        const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const delay = () => new Promise(r => setTimeout(r, 150)); 
+        
+        function toast(t) {
+            const e = $('toast');
+            e.textContent = t;
+            e.classList.add('on');
+            setTimeout(() => e.classList.remove('on'), 2200);
+        }
+
+        /* ===== LỚP API: gom việc gọi API vào một chỗ ===== */
+        const USE_MOCK = true; 
+        const TRIP_ID = (location.pathname.match(/chuyen-di\/([^/]+)/) || [])[1] || new URLSearchParams(location.search).get('tripId') || 'demo';
+
+        async function http(method, path, body) {
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' }
+            };
+            
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (token) options.headers['Authorization'] = 'Bearer ' + token;
+            if (body) options.body = JSON.stringify(body);
+            
+            let res;
+            try {
+                res = await fetch('/api' + path, options);
+            } catch (e) {
+                throw new Error('Không kết nối được máy chủ. Vui lòng thử lại.');
+            }
+
+            if (!res.ok) {
+                let m = '';
+                try { m = (await res.json()).message; } catch (e) {}
+                
+                if (res.status === 401) {
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    throw new Error(m || 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                }
+                if (res.status === 403) {
+                    throw new Error(m || 'Chỉ chủ chuyến mới thực hiện được thao tác này.');
+                }
+                throw new Error(m || 'Có lỗi xảy ra, vui lòng thử lại.');
+            }
+            
+            if (res.status === 204) return null;
+            return res.json();
+        }
+
+        const db = {
+            trip: { name: 'Đà Lạt chill cuối tuần', place: 'Đà Lạt', start: '2026-10-23', end: '2026-10-25' },
+            budget: 5000000,
+            nextId: 10,
+            exp: [
+                { id: 1, desc: 'Homestay 2 đêm', amount: 1100000, cat: 'LT', date: '2026-10-22' },
+                { id: 2, desc: 'Cọc vé xe giường nằm', amount: 100000, cat: 'DC', date: '2026-10-20' },
+                { id: 3, desc: 'Xe buýt và taxi', amount: 380000, cat: 'DC', date: '2026-10-23' },
+                { id: 4, desc: 'Bữa tối chợ đêm', amount: 220000, cat: 'AU', date: '2026-10-23' },
+                { id: 5, desc: 'Vé thác Datanla', amount: 100000, cat: 'TQ', date: '2026-10-23' },
+                { id: 6, desc: 'Quà lưu niệm', amount: 120000, cat: 'MS', date: '2026-10-23' },
+                { id: 7, desc: 'Lẩu gà lá é Tao Ngộ', amount: 420000, cat: 'AU', date: '2026-10-24' },
+                { id: 8, desc: 'Vé Đồi chè Cầu Đất', amount: 120000, cat: 'TQ', date: '2026-10-24' },
+                { id: 9, desc: 'Xăng và thuê xe máy', amount: 220000, cat: 'DC', date: '2026-10-24' }
+            ]
+        };
+        const Q = new URLSearchParams(location.search);
+        const w = async () => { await delay(); if (Q.has('fail')) throw new Error('Lỗi giả lập từ máy chủ.') };
+
+        const mock = {
+            trip: async () => (await delay(), { ...db.trip }),
+            budget: async () => (await delay(), { budget: db.budget, spent: db.exp.reduce((s, e) => s + e.amount, 0) }),
+            expenses: async () => (await delay(), db.exp.map(e => ({ ...e }))),
+            add: async (x) => { await w(); const newExp = { ...x, id: db.nextId++ }; db.exp.push(newExp); return newExp; },
+            update: async (x) => { await w(); Object.assign(db.exp.find(e => e.id == x.id), x); },
+            remove: async (id) => { await w(); db.exp = db.exp.filter(e => e.id != id); },
+            setBudget: async (v) => { await w(); db.budget = v; }
+        };
+
+        const toExp = x => ({ id: x.id, desc: x.description, amount: x.amount, cat: x.category, date: x.date });
+        const fromExp = x => ({ description: x.desc, amount: x.amount, category: x.cat, date: x.date });
+
+        const api = {
+            getTrip: async (id) => {
+                if (USE_MOCK) return mock.trip();
+                const t = await http('GET', `/trips/${id}`);
+                return { name: t.name, place: t.destination, start: t.startDate, end: t.endDate };
+            },
+            getBudget: (id) => USE_MOCK ? mock.budget() : http('GET', `/trips/${id}/budget`),
+            getExpenses: async (id) => {
+                if (USE_MOCK) return mock.expenses();
+                const exps = await http('GET', `/trips/${id}/expenses`);
+                return exps.map(toExp);
+            },
+            addExpense: (id, x) => USE_MOCK ? mock.add(x) : http('POST', `/trips/${id}/expenses`, fromExp(x)),
+            updateExpense: (id, eid, x) => USE_MOCK ? mock.update(x) : http('PUT', `/trips/${id}/expenses/${eid}`, fromExp(x)),
+            deleteExpense: (id, eid) => USE_MOCK ? mock.remove(eid) : http('DELETE', `/trips/${id}/expenses/${eid}`),
+            updateBudget: (id, v) => USE_MOCK ? mock.setBudget(v) : http('PUT', `/trips/${id}/budget`, { budget: v })
+        };
+
+        /* ===== UC 24 · B3: dựng Screen 9 từ API ===== */
+        function render() {
+            if (!TRIP) return;
+            const E = state.exp;
+            const B = state.budget;
+            const spent = state.spent ?? E.reduce((s, e) => s + e.amount, 0);
+            const pct = spent / B * 100;
+            const remain = B - spent;
+            const tn = dayNo(TODAY);
+            const passed = tn < 1 ? 0 : Math.min(tn, TOTAL);
+            const rem = tn < 1 ? TOTAL : tn > TOTAL ? 0 : TOTAL - tn + 1;
+            
+            $('tName').textContent = TRIP.name;
+            $('tMeta').textContent = `${TRIP.place} · ${wd(TRIP.start)} ${dm(TRIP.start)} – ${wd(TRIP.end)} ${dm(TRIP.end)}/${TRIP.end.slice(0, 4)} · ` + (tn < 1 ? 'Sắp đi' : tn > TOTAL ? 'Đã kết thúc' : `Đang đi · ngày ${tn}/${TOTAL}`);
+            
+            const st = pct > 100 ? ['Vượt ngân sách', var_('red')] : pct >= 90 ? ['Sắp hết quỹ', var_('yel')] : ['Đang trong ngân sách', var_('grn')];
+            $('pill').textContent = st[0];
+            $('pill').style.background = st[1];
+            $('fill').style.background = st[1];
+            $('fill').style.width = Math.min(pct, 100) + '%';
+            $('spent').textContent = vnd(spent);
+            $('budget').textContent = vnd(B);
+            $('pct').textContent = Math.round(pct) + '% ngân sách';
+            $('left').textContent = pct > 100 ? 'Vượt ' + vnd(spent - B) : 'Còn lại ' + vnd(remain);
+            $('left').style.color = pct > 100 ? var_('red') : '#a9c2bb';
+            
+            $('perDay').textContent = rem > 0 ? vnd(Math.max(remain, 0) / rem) : '—';
+            $('perDayN').textContent = rem > 0 ? `cho ${rem} ngày còn lại` : 'chuyến đã kết thúc';
+            const past = E.filter(e => { const n = dayNo(e.date); return n >= 1 && n <= passed }).reduce((s, e) => s + e.amount, 0);
+            $('avg').textContent = passed > 0 ? vnd(past / passed) : '—';
+            $('avgN').textContent = passed == 0 ? 'chưa có ngày nào qua' : passed == 1 ? 'ngày 1' : passed == 2 ? 'ngày 1 và 2' : `ngày 1 đến ${passed}`;
+            
+            const cols = [['Trước chuyến', E.filter(e => dayNo(e.date) < 1), '#9bb5ae']];
+            for (let i = 1; i <= TOTAL; i++) cols.push(['Ngày ' + i, E.filter(e => dayNo(e.date) == i), i == tn ? '#d9512c' : '#2e6b57']);
+            cols.push(['Sau chuyến', E.filter(e => dayNo(e.date) > TOTAL), '#9bb5ae']);
+            
+            const sums = cols.map(c => c[1].reduce((s, e) => s + e.amount, 0));
+            const mx = Math.max(...sums, 1);
+            $('chart').innerHTML = cols.map((c, i) => `<div class="col">${short(sums[i])}<i style="height:${sums[i] / mx * 140}px;background:${c[2]}"></i></div>`).join('');
+            $('lbls').innerHTML = cols.map(c => `<span>${c[0]}</span>`).join('');
+            
+            const bc = Object.keys(CATS).map(k => [k, E.filter(e => e.cat == k).reduce((s, e) => s + e.amount, 0)]).sort((a, b) => b[1] - a[1]);
+            const cm = Math.max(bc[0][1], 1);
+            $('cats').innerHTML = bc.map(([k, v]) => `<div class="cat"><div class="row"><span><span class="dot" style="background:${CATS[k][1]}"></span>${CATS[k][0]}</span><b>${vnd(v)}</b></div><div class="t"><i style="width:${v / cm * 100}%;background:${CATS[k][1]}"></i></div></div>`).join('');
+            
+            const big = [...E].filter(e => e.cat == bc[0][0]).sort((a, b) => b.amount - a.amount)[0];
+            $('top').innerHTML = big ? `Khoản lớn nhất: <b>${esc(big.desc)} · ${vnd(big.amount)}</b>` : 'Chưa có khoản chi';
+            
+            $('chips').innerHTML = '<h2 style="margin-right:auto">Khoản chi</h2>' + [['ALL', 'Tất cả'], ...Object.keys(CATS).map(k => [k, CATS[k][0]])].map(([k, t]) => `<button class="chip ${state.filter == k ? 'on' : ''}" data-f="${k}">${t}</button>`).join('') + '<button class="add" id="addBtn">+ Thêm khoản chi</button>';
+            
+            const L = E.filter(e => state.filter == 'ALL' || e.cat == state.filter);
+            const days = [...new Set(L.map(e => e.date))].sort().reverse();
+            $('list').innerHTML = days.length ? days.map(d => {
+                const g = L.filter(e => e.date == d);
+                const n = dayNo(d);
+                const lb = n < 1 ? 'TRƯỚC CHUYẾN' : n > TOTAL ? 'SAU CHUYẾN' : `NGÀY ${n} · ${wd(d)} ${dm(d)}`;
+                return `<div class="gh"><span>${lb}</span><span>${vnd(g.reduce((s, e) => s + e.amount, 0))}</span></div>` + g.map(e => `<button class="it" data-id="${e.id}"><span class="ic" style="background:${CATS[e.cat][2]};color:${CATS[e.cat][1]}">${CODE[e.cat]}</span><span class="n"><b>${esc(e.desc)}</b><small>${CATS[e.cat][0]}</small></span><b>${vnd(e.amount)}</b></button>`).join('');
+            }).join('') : '<p class="sub" style="padding:16px 0">Chưa có khoản chi nào.</p>';
+        }
+
+        function var_(n) { return getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim(); }
+
+        async function load() {
+            const b = $('banner');
+            document.body.classList.add('busy');
+            b.hidden = false;
+            b.className = 'banner ld';
+            b.textContent = 'Đang tải ngân sách…';
+            try {
+                if (!TRIP) { TRIP = await api.getTrip(TRIP_ID); TOTAL = dayNo(TRIP.end); }
+                const [bd, ex] = await Promise.all([api.getBudget(TRIP_ID), api.getExpenses(TRIP_ID)]);
+                state.budget = bd.budget;
+                state.spent = bd.spent;
+                state.exp = ex;
+                b.hidden = true;
+                render();
+            } catch (e) {
+                if (e.message.includes('Phiên đăng nhập')) {
+                    alert(e.message);
+                    location.href = '/dang-nhap?next=' + encodeURIComponent(location.pathname);
+                    return;
+                }
+                b.className = 'banner err';
+                b.textContent = e.message + ' ';
+                const r = document.createElement('button');
+                r.textContent = 'Thử lại';
+                r.onclick = load;
+                b.append(r);
+            } finally {
+                document.body.classList.remove('busy');
+            }
+        }
+
+        /* ===== B4–B5: lọc theo loại; UC 25/26: mở Screen 14 ===== */
+        document.addEventListener('click', e => {
+            const f = e.target.closest('[data-f]');
+            if (f) { state.filter = f.dataset.f; render(); }
+            if (e.target.closest('#addBtn')) openPopup(null);
+            const it = e.target.closest('.it');
+            if (it) openPopup(state.exp.find(x => x.id == it.dataset.id));
+        });
+
+        function openPopup(exp) {
+            const fr = $('pop');
+            const spent = state.spent ?? state.exp.reduce((s, e) => s + e.amount, 0);
+            fr.hidden = false;
+            fr.src = 'popup-khoan-chi.html';
+            fr.onload = () => fr.contentWindow.postMessage({ type: 'init', trip: TRIP, today: TODAY, budget: state.budget, spentOther: spent - (exp ? exp.amount : 0), expense: exp }, '*');
+        }
+
+        window.addEventListener('message', async ev => {
+            const m = ev.data || {};
+            if (!m.type) return;
+            const fr = $('pop');
+            if (m.type == 'close') { fr.hidden = true; return; }
+            try {
+                if (m.type == 'save') {
+                    const x = m.expense;
+                    x.id ? await api.updateExpense(TRIP_ID, x.id, x) : await api.addExpense(TRIP_ID, x);
+                    fr.hidden = true;
+                    toast(x.id ? 'Đã cập nhật khoản chi' : 'Đã thêm khoản chi');
+                } else if (m.type == 'delete') {
+                    await api.deleteExpense(TRIP_ID, m.id);
+                    fr.hidden = true;
+                    toast('Đã xóa khoản chi');
+                } else return;
+            } catch (e) {
+                if (e.message.includes('Phiên đăng nhập')) {
+                    alert(e.message);
+                    location.href = '/dang-nhap?next=' + encodeURIComponent(location.pathname);
+                    return;
+                }
+                fr.contentWindow.postMessage({ type: 'error', message: e.message }, '*');
+                return;
+            }
+            await load();
+        });
+
+        /* ===== UC 27: sửa ngân sách tại chỗ ===== */
+        const bIn = $('bIn');
+        function bEditOpen(on) {
+            $('bView').hidden = on;
+            $('bEdit').hidden = !on;
+            $('bBtn').hidden = on;
+            $('bErr').textContent = '';
+            if (on) { bIn.value = fmt(state.budget); bIn.focus(); bIn.select(); }
+        }
+        $('bBtn').onclick = () => bEditOpen(true);
+        $('bCancel').onclick = () => bEditOpen(false);
+        bIn.oninput = () => {
+            const d = bIn.value.replace(/\D/g, '').slice(0, 15);
+            bIn.value = d ? fmt(+d) : '';
+        };
+
+        async function saveBudget() {
+            if ($('bSave').disabled) return;
+            const v = +bIn.value.replace(/\D/g, '');
+            if (!(v > 0)) {
+                $('bErr').textContent = 'Ngân sách phải lớn hơn 0.';
+                bIn.focus();
+                return;
+            }
+            $('bSave').disabled = true;
+            try {
+                await api.updateBudget(TRIP_ID, v);
+                bEditOpen(false);
+                await load();
+                toast('Đã cập nhật ngân sách');
+            } catch (e) {
+                if (e.message.includes('Phiên đăng nhập')) {
+                    alert(e.message);
+                    location.href = '/dang-nhap?next=' + encodeURIComponent(location.pathname);
+                } else {
+                    $('bErr').textContent = e.message;
+                }
+            } finally {
+                $('bSave').disabled = false;
+            }
+        }
+        $('bSave').onclick = saveBudget;
+        bIn.onkeydown = e => { if (e.key == 'Enter') saveBudget(); if (e.key == 'Escape') bEditOpen(false); };
+        
+        load();
+    </script>
+</body>
+</html>
