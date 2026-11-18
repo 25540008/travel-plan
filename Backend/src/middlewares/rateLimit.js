@@ -1,6 +1,5 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, , { ipKeyGenerator } from 'express-rate-limit';
 import { AppError } from '../utils/AppError.js';
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 /**
  * UC 2 · B5 / NFR 4: tối đa 10 lần đăng nhập sai trên một IP trong 15 phút.
