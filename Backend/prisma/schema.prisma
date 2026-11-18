@@ -49,6 +49,18 @@ model Destination {
   isFeatured  Boolean  @default(true) @map("is_featured")
   createdAt   DateTime @default(now()) @map("created_at")
   trips       Trip[]
+  slug            String?  @unique @db.VarChar(120)
+  province        String?  @db.VarChar(100)
+  region          String?  @db.VarChar(50)  // MIEN_BAC | MIEN_TRUNG | TAY_NGUYEN | MIEN_NAM
+  category        String?  @db.VarChar(50)  // BIEN_DAO | NUI_RUNG | VAN_HOA (chip loại UC 8)
+  bestMonths      Int[]    @default([]) @map("best_months")
+  avgTempByMonth  Json?    @map("avg_temp_by_month")
+  summary         String?  @db.Text
+  suggestedDays   Int      @default(3) @map("suggested_days")
+  distanceFromHcm String?  @map("distance_from_hcm") @db.VarChar(100)
+  tags            String[] @default([])
+  spots Spot[]
+  costs Cost[]
 
   @@map("destinations")
 }
@@ -136,4 +148,33 @@ model SavedItem {
   @@unique([userId, itemType, itemId])
   @@index([userId])
   @@map("saved_items")
+}
+
+model Cost {
+  id            Int     @id @default(autoincrement())
+  destinationId Int     @map("destination_id")
+  item          String  @db.VarChar(150)
+  min           Decimal @db.Decimal(15, 2)
+  max           Decimal @db.Decimal(15, 2)
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@index([destinationId])
+  @@map("destination_costs")
+}
+
+model Spot {
+  id            Int      @id @default(autoincrement())
+  destinationId Int      @map("destination_id")
+  name          String   @db.VarChar(150)
+  type          String   @db.VarChar(50) // SIGHTSEEING | FOOD | CULTURE
+  lat           Decimal? @db.Decimal(10, 7)
+  lng           Decimal? @db.Decimal(10, 7)
+  note          String?  @db.Text
+  imageUrl      String?  @map("image_url") @db.VarChar(500)
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@index([destinationId])
+  @@map("destination_spots")
 }
