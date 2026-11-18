@@ -385,7 +385,29 @@ async function main() {
     },
   });
 
-  console.log(`Seed xong: ${destinations.length} điểm đến, tài khoản ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
+for (const { spots, costs, ...destData } of DESTINATIONS_DATA) {
+    const existing = await prisma.destination.findFirst({ where: { name: destData.name } });
+    const dest = existing
+      ? await prisma.destination.update({ where: { id: existing.id }, data: destData })
+      : await prisma.destination.create({ data: destData });
+
+    await prisma.spot.deleteMany({ where: { destinationId: dest.id } });
+    await prisma.cost.deleteMany({ where: { destinationId: dest.id } });
+
+    if (spots?.length) {
+      await prisma.spot.createMany({
+        data: spots.map((s) => ({ ...s, destinationId: dest.id })),
+      });
+    }
+
+    if (costs?.length) {
+      await prisma.cost.createMany({
+        data: costs.map((c) => ({ ...c, destinationId: dest.id })),
+      });
+    }
+  }
+
+  console.log(`Seed xong: ${destinations.length} điểm đến (cập nhật chi tiết ${DESTINATIONS_DATA.length} điểm đến), tài khoản ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
 }
 
 main()
