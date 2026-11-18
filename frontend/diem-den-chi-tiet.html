@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Điểm đến · Travelplan</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/diem-den-chi-tiet.css">
+</head>
+<!-- Screen 4 Chi tiết điểm đến (UC 9, UC 10). TP-46. Dữ liệu và hành vi ở js/pages/diem-den-chi-tiet.js.
+     Đường dẫn: diem-den-chi-tiet.html?slug=da-lat -->
+<body data-page="destinations">
+  <div id="site-header"></div>
+
+  <main id="dest-page" aria-busy="true">
+    <!-- Đang tải -->
+    <div class="dd-loading" id="dd-loading">
+      <div class="dd-hero skeleton"></div>
+      <div class="container"><div class="dd-facts-skeleton skeleton"></div></div>
+    </div>
+
+    <!-- UC 9 · B2a: không tìm thấy điểm đến -->
+    <section class="container dd-notfound" id="dd-notfound" hidden>
+      <p class="dd-notfound-code" aria-hidden="true">404</p>
+      <h1>Không tìm thấy điểm đến</h1>
+      <p class="meta">Điểm đến này không tồn tại hoặc đã bị gỡ. Bạn thử xem các điểm đến khác nhé.</p>
+      <div class="dd-notfound-actions">
+        <a class="btn btn-primary" data-href="destinations">Xem các điểm đến</a>
+        <a class="btn btn-secondary" data-href="home">Về trang chủ</a>
+      </div>
+    </section>
+
+    <div id="dd-content" hidden>
+      <!-- Hero -->
+      <section class="dd-hero" id="dd-hero">
+        <div class="dd-hero-art" id="dd-hero-art" aria-hidden="true"></div>
+        <div class="container dd-hero-inner">
+          <div>
+            <nav class="dd-breadcrumb" aria-label="Breadcrumb" id="dd-breadcrumb"></nav>
+            <h1 class="display" id="dd-name"></h1>
+            <p class="dd-tagline" id="dd-tagline"></p>
+          </div>
+          <div class="dd-hero-actions">
+            <button type="button" class="btn dd-btn-ghost" id="dd-save" data-label aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="dd-save-label">Lưu</span></button>
+            <a class="btn btn-primary" id="dd-create">＋ Tạo chuyến</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5 thẻ thông tin nhanh -->
+      <div class="container">
+        <ul class="dd-facts" id="dd-facts"></ul>
+
+        <!-- Tab neo (UC 9 · B4) -->
+        <nav class="dd-tabs" id="dd-tabs" aria-label="Nội dung điểm đến">
+          <a href="#tong-quan" aria-current="true">Tổng quan</a>
+          <a href="#dia-diem">Địa điểm nên ghé</a>
+          <a href="#lich-trinh-mau">Lịch trình mẫu</a>
+          <a href="#thoi-diem">Thời điểm nên đi</a>
+          <a href="#thoi-tiet">Thời tiết</a>
+        </nav>
+
+        <div class="dd-layout">
+          <div class="dd-main">
+            <section id="tong-quan" class="dd-section">
+              <h2><span class="js-name"></span> có gì?</h2>
+              <p class="dd-desc" id="dd-desc"></p>
+              <p class="dd-tags" id="dd-tags"></p>
+            </section>
+
+            <section id="dia-diem" class="dd-section">
+              <div class="dd-section-head">
+                <div>
+                  <h2>Địa điểm nên ghé</h2>
+                  <p class="meta">Xếp theo số lịch trình cộng đồng có ghé nơi này.</p>
+                </div>
+                <div class="dd-chips" id="dd-spot-filter" role="group" aria-label="Lọc theo loại">
+                  <button type="button" class="chip" data-type="" aria-pressed="true">Tất cả</button>
+                  <button type="button" class="chip" data-type="SIGHTSEEING" aria-pressed="false">Ngắm cảnh</button>
+                  <button type="button" class="chip" data-type="FOOD" aria-pressed="false">Ăn uống</button>
+                  <button type="button" class="chip" data-type="CULTURE" aria-pressed="false">Văn hóa</button>
+                </div>
+              </div>
+              <div class="dd-spots" id="dd-spots"></div>
+              <p class="meta dd-empty" id="dd-spots-empty" hidden>Chưa có địa điểm thuộc loại này.</p>
+            </section>
+
+            <section id="lich-trinh-mau" class="dd-section">
+              <div class="dd-section-head">
+                <h2>Lịch trình mẫu ở <span class="js-name"></span></h2>
+                <a class="section-link" id="dd-itin-all" hidden></a>
+              </div>
+              <div class="dd-itins" id="dd-itins"></div>
+            </section>
+
+            <section id="thoi-diem" class="dd-section">
+              <h2>Thời điểm nên đi</h2>
+              <ol class="dd-months" id="dd-months"></ol>
+              <ul class="dd-legend" id="dd-legend"></ul>
+            </section>
+          </div>
+
+          <aside class="dd-side">
+            <!-- UC 10: lỗi → ẩn cả khối, không báo lỗi -->
+            <section id="thoi-tiet" class="card dd-weather" hidden>
+              <div class="dd-weather-head">
+                <h3>Thời tiết hôm nay</h3>
+                <span class="meta" id="wx-updated"></span>
+              </div>
+              <div class="dd-wx-now" id="wx-now"></div>
+              <ol class="dd-wx-days" id="wx-days"></ol>
+              <p class="dd-wx-tip" id="wx-tip" hidden></p>
+              <p class="meta dd-wx-src">Nguồn: Open-Meteo</p>
+            </section>
+
+            <section class="card dd-map-card" id="dd-map-card" hidden>
+              <div id="dd-map" class="dd-map" role="region" aria-label="Bản đồ địa điểm nên ghé"></div>
+              <a class="dd-map-link" id="dd-map-link" target="_blank" rel="noopener">Mở bản đồ lớn</a>
+            </section>
+
+            <section class="dd-costs" id="dd-costs" hidden>
+              <h3 id="dd-costs-title">Chi phí tham khảo</h3>
+              <table>
+                <tbody id="dd-costs-body"></tbody>
+                <tfoot><tr><th scope="row">Tổng mỗi người</th><td id="dd-costs-total"></td></tr></tfoot>
+              </table>
+              <p class="dd-costs-note" id="dd-costs-note"></p>
+            </section>
+
+            <section class="card dd-nearby" id="dd-nearby" hidden>
+              <h3>Điểm đến gần đó</h3>
+              <ul id="dd-nearby-list"></ul>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+  <script type="module" src="js/layout.js"></script>
+  <script type="module" src="js/pages/diem-den-chi-tiet.js"></script>
+</body>
+</html>
