@@ -1,0 +1,196 @@
+/* Screen 4 Chi tiết điểm đến (TP-46). Cần tokens.css, base.css trước. */
+
+/* Hero */
+.dd-hero { position: relative; min-height: 420px; color: var(--white); overflow: hidden; background: var(--pine); display: flex; align-items: flex-end; }
+.dd-hero.skeleton { min-height: 420px; }
+.dd-hero-art, .dd-hero-art .dd-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.dd-hero::after { content: ''; position: absolute; inset: 35% 0 0; background: linear-gradient(transparent, rgba(16, 48, 46, .88)); pointer-events: none; }
+.dd-hero-inner { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-6); padding-bottom: var(--space-8); }
+.dd-hero h1 { color: var(--white); margin: var(--space-2) 0; text-shadow: 0 2px 16px rgba(16, 48, 46, .3); }
+.dd-tagline { margin: 0; max-width: 640px; font-size: 17px; line-height: 1.5; }
+.dd-breadcrumb { font-size: var(--fs-meta); }
+.dd-breadcrumb a { color: var(--white); }
+.dd-hero-actions { display: flex; gap: var(--space-3); flex: none; }
+.dd-btn-ghost { background: rgba(16, 48, 46, .35); color: var(--white); border-color: rgba(255, 255, 255, .7); }
+.dd-btn-ghost:hover { background: rgba(16, 48, 46, .6); }
+.dd-btn-ghost svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+.dd-btn-ghost.is-saved { background: var(--white); color: var(--coral); border-color: var(--white); }
+.dd-btn-ghost.is-saved svg { fill: currentColor; }
+
+/* 5 thẻ thông tin nhanh */
+.dd-facts { list-style: none; margin: var(--space-5) 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-3); }
+.dd-facts:empty { display: none; }
+.dd-facts-skeleton { height: 96px; margin-top: var(--space-5); border-radius: var(--radius-card); }
+.dd-fact { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-card); }
+.dd-fact-icon { flex: none; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--mist); color: var(--pine); }
+.dd-fact-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dd-fact.is-hot .dd-fact-icon { background: var(--sun); color: var(--ink); }
+.dd-fact div { display: flex; flex-direction: column; min-width: 0; }
+.dd-fact-label { font-size: var(--fs-small); color: var(--muted); }
+.dd-fact strong { font: 600 var(--fs-body) var(--font-heading); }
+.dd-fact-sub { font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+/* Tab neo */
+.dd-tabs { position: sticky; top: var(--header-height); z-index: 20; display: flex; gap: var(--space-2); margin-top: var(--space-5); background: var(--paper); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+.dd-tabs a { flex: none; padding: var(--space-3) var(--space-3); font-size: var(--fs-meta); font-weight: 500; color: var(--muted); text-decoration: none; border-bottom: 3px solid transparent; }
+.dd-tabs a[hidden] { display: none; }
+.dd-tabs a:hover { color: var(--ink); }
+.dd-tabs a[aria-current='true'] { color: var(--ink); font-weight: 700; border-bottom-color: var(--coral); }
+
+/* Bố cục 2 cột */
+.dd-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--space-6); align-items: start; margin-top: var(--space-6); }
+.dd-main { min-width: 0; }
+.dd-side { display: grid; gap: var(--space-4); }
+.dd-side > [hidden] { display: none; }
+.dd-section { padding-bottom: var(--space-8); scroll-margin-top: calc(var(--header-height) + 64px); }
+.dd-section[hidden] { display: none; }
+#thoi-tiet { scroll-margin-top: calc(var(--header-height) + 64px); }
+.dd-section h2 { margin-bottom: var(--space-3); }
+.dd-section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.dd-section-head h2 { margin: 0; }
+.dd-section-head .meta { margin: var(--space-1) 0 0; font-weight: 400; }
+.dd-desc { margin: 0 0 var(--space-3); line-height: 1.7; }
+.dd-tags { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; }
+.dd-empty { margin: 0; }
+.dd-empty[hidden] { display: none; }
+
+/* Địa điểm nên ghé */
+.dd-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.dd-chips .chip { border: 1px solid var(--border); background: var(--white); cursor: pointer; font-family: var(--font-body); color: var(--ink); }
+.dd-chips .chip[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: var(--white); }
+.dd-chips .chip:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+.dd-spots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.dd-spot { display: flex; flex-direction: column; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; }
+.dd-spot[hidden] { display: none; }
+.dd-spot-cover { position: relative; aspect-ratio: 2 / 1; background: var(--mist); }
+.dd-spot-cover .cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dd-spot-type { position: absolute; top: var(--space-2); left: var(--space-2); height: 24px; font-size: 12px; }
+.dd-spot-body { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-4); flex: 1; }
+.dd-spot-body h3 { font-size: var(--fs-body); margin: 0; }
+.dd-spot-body .meta { margin: 0; font-size: var(--fs-small); font-weight: 400; }
+.dd-spot-count { margin: 0; font-size: var(--fs-small); font-weight: 600; color: var(--pine); }
+.dd-spot-body .btn { margin-top: auto; width: 100%; }
+.dd-spot-body .dd-spot-count + .btn, .dd-spot-body .meta + .btn { margin-top: var(--space-3); }
+
+/* Lịch trình mẫu */
+.dd-itins { display: grid; gap: var(--space-3); }
+.dd-itin { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto auto; gap: var(--space-4); align-items: center; padding: var(--space-3); background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-card); }
+.dd-itin-cover { display: block; width: 96px; height: 72px; border-radius: 12px; overflow: hidden; }
+.dd-itin-cover .cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dd-itin-meta { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: 0 0 2px; font-size: var(--fs-small); color: var(--muted); }
+.dd-itin-meta .chip { height: 22px; font-size: 12px; }
+.dd-itin h3 { font-size: var(--fs-body); margin: 0; }
+.dd-itin h3 a { text-decoration: none; }
+.dd-itin h3 a:hover { text-decoration: underline; }
+.dd-itin-stops { margin: 2px 0 0; font-size: var(--fs-small); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dd-itin-cost { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.dd-itin-cost .meta { font-size: 12px; }
+.dd-itin-cost strong { color: var(--coral); font: 700 var(--fs-h3) var(--font-heading); }
+.dd-itin-empty { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+.dd-itin-empty p { margin: 0; }
+
+/* Thời điểm nên đi */
+.dd-months { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--space-2); }
+.dd-month { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); }
+.dd-month-bar { width: 100%; height: 40px; border-radius: 10px; }
+.dd-month-label { font-size: var(--fs-small); color: var(--muted); }
+.dd-month.is-now .dd-month-label { color: var(--ink); font-weight: 700; }
+.dd-month.is-now .dd-month-bar { outline: 2px solid var(--coral); outline-offset: 2px; }
+.is-best.dd-month .dd-month-bar, .dd-swatch.is-best { background: var(--pine); }
+.is-ok.dd-month .dd-month-bar, .dd-swatch.is-ok { background: #a8cbbb; }
+.is-special.dd-month .dd-month-bar, .dd-swatch.is-special { background: var(--sun); }
+.dd-legend { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: var(--fs-small); color: var(--muted); }
+.dd-legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.dd-swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+/* Thời tiết (UC 10) */
+.dd-weather { padding: var(--space-4); }
+.dd-weather-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); margin-bottom: var(--space-3); }
+.dd-weather-head h3 { margin: 0; font-size: 17px; }
+.dd-weather-head .meta { font-size: 12px; }
+.dd-wx-now { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-3); align-items: center; padding: var(--space-4); border-radius: 14px; background: #d9ecf2; }
+.dd-wx-now[hidden] { display: none; }
+.dd-wx-now .wx-icon { width: 40px; height: 40px; fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; }
+.dd-wx-temp { display: flex; flex-direction: column; }
+.dd-wx-temp strong { font: 700 32px/1 var(--font-heading); }
+.dd-wx-temp span { font-size: var(--fs-small); color: var(--muted); }
+.dd-wx-stats { margin: 0; display: grid; gap: 2px; font-size: 12px; text-align: right; }
+.dd-wx-stats div { display: flex; justify-content: flex-end; gap: var(--space-1); }
+.dd-wx-stats dt { color: var(--muted); }
+.dd-wx-stats dd { margin: 0; font-weight: 700; }
+.dd-wx-days { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.dd-wx-days li { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--space-1) 0; border-radius: 8px; font-size: 12px; }
+.dd-wx-days li.is-today { background: var(--mist); }
+.dd-wx-days .wx-icon { width: 18px; height: 18px; fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; }
+.dd-wx-wd { font-weight: 700; }
+.dd-wx-lo { color: var(--muted); }
+.dd-wx-rain { color: var(--lake); font-weight: 600; }
+.dd-wx-tip { margin: var(--space-3) 0 0; padding: var(--space-3); border-radius: var(--radius-control); background: var(--paper); font-size: var(--fs-small); line-height: 1.5; }
+.dd-wx-tip[hidden] { display: none; }
+.dd-wx-src { margin: var(--space-3) 0 0; font-size: 12px; }
+
+/* Bản đồ */
+.dd-map-card { padding: 0; overflow: hidden; }
+.dd-map { height: 220px; background: var(--mist); }
+.dd-map-link { display: block; padding: var(--space-3); text-align: center; font-size: var(--fs-meta); font-weight: 600; }
+.dd-pin span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--coral); color: var(--white); border: 2px solid var(--white); font: 700 12px var(--font-body); box-shadow: 0 2px 6px rgba(0, 0, 0, .25); }
+
+/* Chi phí tham khảo */
+.dd-costs { padding: var(--space-5); border-radius: var(--radius-card); background: var(--ink); color: var(--white); }
+.dd-costs h3 { color: var(--white); font-size: 17px; }
+.dd-costs table { width: 100%; border-collapse: collapse; font-size: var(--fs-meta); }
+.dd-costs th { text-align: left; font-weight: 400; color: #c9d8d2; padding: var(--space-1) 0; }
+.dd-costs td { text-align: right; font-weight: 600; padding: var(--space-1) 0; white-space: nowrap; }
+.dd-costs tfoot th, .dd-costs tfoot td { padding-top: var(--space-3); border-top: 1px solid rgba(255, 255, 255, .2); font-weight: 700; color: var(--white); }
+.dd-costs tfoot td { color: var(--sun); font: 700 var(--fs-h3) var(--font-heading); }
+.dd-costs-note { margin: var(--space-3) 0 0; font-size: 12px; color: #c9d8d2; }
+
+/* Điểm đến gần đó */
+.dd-nearby { padding: var(--space-4); }
+.dd-nearby h3 { font-size: 17px; }
+.dd-nearby ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.dd-nearby a { display: flex; align-items: center; gap: var(--space-3); text-decoration: none; border-radius: var(--radius-control); }
+.dd-nearby a:hover strong { text-decoration: underline; }
+.dd-nearby-thumb { width: 48px; height: 48px; flex: none; border-radius: 10px; object-fit: cover; overflow: hidden; }
+.dd-nearby a > span { display: flex; flex-direction: column; }
+.dd-nearby .meta { font-size: 12px; font-weight: 400; }
+
+/* Không tìm thấy (UC 9 B2a) */
+.dd-notfound { text-align: center; padding: 96px var(--space-6); }
+.dd-notfound[hidden] { display: none; }
+.dd-notfound-code { margin: 0; font: 700 96px/1 var(--font-heading); color: var(--mist); }
+.dd-notfound .meta { font-weight: 400; max-width: 480px; margin: 0 auto var(--space-6); }
+.dd-notfound-actions { display: flex; justify-content: center; gap: var(--space-3); flex-wrap: wrap; }
+.dd-loading[hidden] { display: none; }
+.skeleton { background: linear-gradient(90deg, var(--white) 25%, var(--mist) 50%, var(--white) 75%); background-size: 200% 100%; animation: dd-shimmer 1.2s infinite; }
+@keyframes dd-shimmer { to { background-position: -200% 0; } }
+
+/* NFR 5: dưới 1024px xếp 1 cột, dưới 768px thu gọn cho điện thoại */
+@media (max-width: 1100px) {
+  .dd-facts { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 1023px) {
+  .dd-layout { grid-template-columns: 1fr; }
+  .dd-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dd-spots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  .dd-hero, .dd-hero.skeleton { min-height: 340px; }
+  .dd-hero-inner { flex-direction: column; align-items: stretch; gap: var(--space-4); padding-bottom: var(--space-6); }
+  .dd-hero-actions { flex-wrap: wrap; }
+  .dd-hero-actions .btn-primary { flex: 1; }
+  .dd-tagline { font-size: var(--fs-meta); }
+  .dd-facts { grid-template-columns: repeat(2, 1fr); gap: var(--space-2); }
+  .dd-fact { padding: var(--space-3); }
+  .dd-fact-icon { display: none; }
+  .dd-side { grid-template-columns: 1fr; }
+  .dd-spots { grid-template-columns: 1fr; }
+  .dd-itin { grid-template-columns: 72px minmax(0, 1fr); }
+  .dd-itin-cover { width: 72px; height: 72px; }
+  .dd-itin-cost { grid-column: 2; flex-direction: row; align-items: baseline; gap: var(--space-2); text-align: left; }
+  .dd-itin-cost strong { font-size: var(--fs-body); }
+  .dd-itin .btn { grid-column: 2; justify-self: start; }
+  .dd-spot-cover { aspect-ratio: 3 / 1; }
+  .dd-itin-stops { white-space: normal; }
+  .dd-months { grid-template-columns: repeat(6, 1fr); row-gap: var(--space-3); }
+}

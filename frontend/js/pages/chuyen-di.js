@@ -9,7 +9,7 @@ import { weatherIcon, loadWeather, findRainWarning, FORECAST_DAYS } from '../wea
 import { deleteTrip } from '../trip-delete.js';
 import { showFlash } from '../ui.js';
 import { takePendingSpot } from '../add-to-trip.js';
-import { addBaseLayer } from '../geo.js';
+import { createMap } from '../maps.js';
 import {
   todayVN, tripDays, tripStatus, daysBetween, isoDate, minutesOf, findOverlaps, escapeHtml,
 } from '../trip-utils.js';
@@ -220,8 +220,8 @@ function renderTimeline(items, isOffSchedule) {
 
 /* ---------- Bản đồ (Leaflet + OpenStreetMap) ---------- */
 
-let map;
-let mapLayer;
+let mapPromise = null; // bản đồ (Google Maps hoặc Leaflet) tạo một lần, js/maps.js
+let mapToken = 0;
 
 function renderMap(items) {
   const points = items.filter(hasCoords).map((it) => [Number(it.latitude), Number(it.longitude)]);
@@ -241,33 +241,23 @@ function renderMap(items) {
     ? `Tổng quãng đường ≈ ${formatKm(total)} km`
     : points.length ? '' : 'Hoạt động chưa có toạ độ trên bản đồ';
 
-  if (!window.L) {
-    $('map').hidden = true;
-    return;
-  }
-  if (!map) {
-    map = window.L.map('map', { scrollWheelZoom: false, attributionControl: true });
-    addBaseLayer(map);
-  }
-  mapLayer?.remove();
-  mapLayer = window.L.layerGroup().addTo(map);
-
-  if (points.length) {
-    points.forEach((p, i) => {
-      window.L.marker(p, {
-        icon: window.L.divIcon({ className: 'map-pin', html: `<span>${i + 1}</span>`, iconSize: [26, 26] }),
-      }).addTo(mapLayer);
-    });
-    if (points.length > 1) window.L.polyline(points, { color: '#10302e', weight: 3, dashArray: '2 8', lineCap: 'round' }).addTo(mapLayer);
-    map.fitBounds(points, { padding: [30, 30], maxZoom: 15 });
-  } else if (hasCoords(t)) {
-    const center = [Number(t.latitude), Number(t.longitude)];
-    window.L.circleMarker(center, { radius: 8, color: '#d9512c', fillOpacity: 0.9 }).addTo(mapLayer);
-    map.setView(center, 12);
-  } else {
-    map.setView([16.0, 107.5], 5);
-  }
-  setTimeout(() => map.invalidateSize(), 0);
+  const token = ++mapToken;
+  mapPromise ||= createMap($('map'), { center: [16.0, 107.5], zoom: 5 });
+  mapPromise.then((view) => {
+    if (token !== mapToken) return; // đã có lần vẽ mới hơn (đổi ngày nhanh)
+    if (!view) {
+      $('map').hidden = true;
+      return;
+    }
+    if (points.length) {
+      view.showPins(points.map(([lat, lng], i) => ({ lat, lng, label: i + 1 })), { pinClass: 'map-pin', route: true, maxZoom: 15 });
+    } else if (hasCoords(t)) {
+      view.showDot([Number(t.latitude), Number(t.longitude)], 12);
+    } else {
+      view.clear();
+      view.setView([16.0, 107.5], 5);
+    }
+  });
 }
 
 /* ---------- Ghép lại ---------- */
