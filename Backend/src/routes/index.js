@@ -10,6 +10,7 @@ import weatherRoutes from './weather.routes.js';
 import itineraryRoutes from './itinerary.routes.js';
 import publicItineraryRoutes from './publicItineraries.routes.js';
 import publicRoutes from './public.routes.js';
+import passwordResetRoutes from './passwordReset.routes.js';
 import savedRoutes from './saved.routes.js';
 import expenseRoutes from './expense.routes.js';
 
@@ -17,6 +18,7 @@ const router = Router();
 
 router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
+router.use('/auth', passwordResetRoutes);
 router.use('/trips/:id/cover', tripCoverRoutes);
 router.use('/trips', tripRoutes);
 
