@@ -8,6 +8,7 @@ import { coverHtml } from '../cover.js';
 import { weatherIcon, loadWeather, findRainWarning, FORECAST_DAYS } from '../weather.js';
 import { deleteTrip } from '../trip-delete.js';
 import { showFlash } from '../ui.js';
+import { takePendingSpot } from '../add-to-trip.js';
 import { addBaseLayer } from '../geo.js';
 import {
   todayVN, tripDays, tripStatus, daysBetween, isoDate, minutesOf, findOverlaps, escapeHtml,
@@ -392,6 +393,12 @@ async function load({ keepDay = false } = {}) {
     state.selected = 1;
   }
   selectDay(state.selected, { push: false });
+
+  // UC 23: đi từ Screen 4 sang, mở sẵn popup Screen 8 đã điền địa điểm
+  if (!keepDay) {
+    const spot = takePendingSpot(tripId);
+    if (spot && state.days.some((d) => d.iso === spot.date)) emit('add-item', { date: spot.date, prefill: spot.prefill });
+  }
 
   // chuyen-di.html?id=..&tab=budget mở thẳng tab Ngân sách (Screen 9)
   if (!keepDay && params.get('tab') === 'budget') document.querySelector('.trip-tab[data-tab="budget"]')?.click();

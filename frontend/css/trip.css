@@ -206,3 +206,8 @@
   .time-wheel select { width: 64px; }
   .shared-list li { grid-template-columns: 1fr; gap: var(--space-1); }
 }
+
+/* UC 23 (TP-47): ô [Ngoài trời] trong popup hoạt động và popup chọn chuyến ở Screen 4 */
+.check-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); font-size: var(--fs-body); }
+.add-trip-modal { max-width: 420px; }
+.add-trip-spot { margin: 0 0 var(--space-3); }

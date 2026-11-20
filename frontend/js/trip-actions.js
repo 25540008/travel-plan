@@ -291,7 +291,7 @@ function timeWheel(name, label) {
     </div>`;
 }
 
-async function openItem({ trip, item = null, date }) {
+async function openItem({ trip, item = null, date, prefill = null }) {
   const isEdit = Boolean(item);
   const days = tripDates(trip);
   let allItems = [];
@@ -349,6 +349,9 @@ async function openItem({ trip, item = null, date }) {
           <input class="input" id="item-place" name="location" data-maxlength="200" autocomplete="off" placeholder="Tìm địa điểm (từ 2 ký tự)">
           <ul class="place-list" hidden role="listbox"></ul>
         </div>
+        ${prefill
+          ? `<label class="check-row"><input type="checkbox" name="outdoor" ${prefill.outdoor ? 'checked' : ''}> Ngoài trời</label>`
+          : ''}
         <div class="field">
           <label for="item-note">Ghi chú</label>
           <textarea class="input" id="item-note" name="note" data-maxlength="1000" rows="2" placeholder="Đặt bàn trước, mang áo khoác..."></textarea>
@@ -376,6 +379,16 @@ async function openItem({ trip, item = null, date }) {
     form.note.value = item.note || '';
     setTime('start', minutesOf(formatTime(item.startTime)));
     setTime('end', minutesOf(formatTime(item.endTime)));
+  } else if (prefill) {
+    // UC 23: từ Screen 4 sang, điền sẵn tên, địa chỉ, ghi chú. Giờ vẫn theo quy tắc thêm mới bên dưới.
+    form.activity.value = prefill.activity || '';
+    form.location.value = prefill.location || '';
+    form.note.value = prefill.note || '';
+    dirty = true; // đóng khi chưa lưu → MSG 25
+    const ends = sameDay(dayIso).map((it) => minutesOf(formatTime(it.endTime)));
+    const start = ends.length ? Math.max(...ends) : 8 * 60;
+    setTime('start', start);
+    setTime('end', start + 60);
   } else {
     const ends = sameDay(dayIso).map((it) => minutesOf(formatTime(it.endTime)));
     const start = ends.length ? Math.max(...ends) : 8 * 60;
@@ -430,7 +443,9 @@ async function openItem({ trip, item = null, date }) {
   // Toạ độ của địa điểm đã chọn từ gợi ý (để ghim trên bản đồ ngày). Gõ lại tay thì bỏ toạ độ.
   let coords = isEdit && item.latitude != null && item.longitude != null
     ? { latitude: Number(item.latitude), longitude: Number(item.longitude) }
-    : null;
+    : prefill?.latitude != null && prefill?.longitude != null
+      ? { latitude: prefill.latitude, longitude: prefill.longitude }
+      : null;
   bindPlaceSearch(form.location, el.querySelector('.place-list'), trip, (picked) => (coords = picked));
   for (const f of [form.activity, form.location, form.note]) f.addEventListener('blur', () => validateInput(f));
   form.activity.addEventListener('input', () => clearFieldError(form.activity));
