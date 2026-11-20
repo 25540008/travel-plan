@@ -1,0 +1,1407 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Điểm đến trong nước · Travelplan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Lexend:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #10302e;
+        --pine: #2f6b5c;
+        --coral: #d9512c;
+        --sun: #f2c25b;
+        --lake: #3c7fa0;
+        --mist: #e3eee8;
+        --bg: #f4f6f2;
+        --muted: #4a5e5b;
+        --line: #dce3df;
+        --card: 20px;
+        --ctl: 12px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          400 14px/1.5 "Be Vietnam Pro",
+          system-ui,
+          sans-serif;
+      }
+      h1,
+      h2,
+      h3,
+      .logo {
+        font-family: Lexend, "Be Vietnam Pro", system-ui, sans-serif;
+        margin: 0;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+      :focus-visible {
+        outline: 3px solid var(--lake);
+        outline-offset: 2px;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+      .wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      /* Header + hero */
+      .hero {
+        position: relative;
+        background: linear-gradient(#3f6b63, #2f5a52);
+        color: #fff;
+        overflow: hidden;
+      }
+      .hero svg.bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .hero .wrap {
+        position: relative;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding-top: 16px;
+        padding-bottom: 8px;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 18px;
+      }
+      .logo i {
+        font-style: normal;
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: #fff;
+      }
+      .nav {
+        display: flex;
+        gap: 4px;
+        flex: 1;
+      }
+      .nav a {
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-weight: 500;
+        font-size: 13px;
+      }
+      .nav a:hover {
+        background: rgba(255, 255, 255, 0.14);
+      }
+      .nav a[aria-current="page"] {
+        background: rgba(255, 255, 255, 0.28);
+      }
+      .menu-btn {
+        display: none;
+        margin-left: auto;
+        background: rgba(255, 255, 255, 0.18);
+        border: 0;
+        border-radius: var(--ctl);
+        padding: 8px 12px;
+        color: #fff;
+        cursor: pointer;
+      }
+      .auth {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        position: relative;
+      }
+      .btn {
+        display: inline-block;
+        border: 0;
+        border-radius: var(--ctl);
+        padding: 9px 16px;
+        font-weight: 600;
+        cursor: pointer;
+        background: var(--coral);
+        color: #fff;
+      }
+      .btn.ghost {
+        background: transparent;
+        color: inherit;
+        border: 1px solid currentColor;
+      }
+      .btn.light {
+        background: #fff;
+        color: var(--ink);
+      }
+      .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 0;
+        background: #fff;
+        color: var(--ink);
+        font:
+          700 13px Lexend,
+          sans-serif;
+        cursor: pointer;
+      }
+      .acc {
+        position: absolute;
+        right: 0;
+        top: 44px;
+        z-index: 5;
+        min-width: 160px;
+        background: #fff;
+        color: var(--ink);
+        border-radius: var(--ctl);
+        box-shadow: 0 8px 24px rgba(16, 48, 46, 0.2);
+        padding: 6px;
+      }
+      .acc a,
+      .acc button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        border: 0;
+        background: none;
+        padding: 9px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .acc a:hover,
+      .acc button:hover {
+        background: var(--mist);
+      }
+      .hero-body {
+        padding: 56px 0 96px;
+      }
+      .crumb {
+        font-size: 12px;
+        opacity: 0.85;
+        margin-bottom: 16px;
+      }
+      .crumb a:hover {
+        text-decoration: underline;
+      }
+      h1 {
+        font-size: 52px;
+        line-height: 1.1;
+        font-weight: 700;
+      }
+      .hero p {
+        max-width: 540px;
+        margin: 16px 0 28px;
+        font-size: 15px;
+        opacity: 0.92;
+      }
+      .search {
+        position: relative;
+        max-width: 560px;
+      }
+      .search input {
+        width: 100%;
+        height: 48px;
+        border: 0;
+        border-radius: var(--ctl);
+        padding: 0 16px 0 42px;
+        background: #fff;
+        color: var(--ink);
+      }
+      .search svg {
+        position: absolute;
+        left: 14px;
+        top: 15px;
+      }
+
+      /* Season */
+      .season {
+        padding-top: 40px;
+      }
+      .eyebrow {
+        color: var(--coral);
+        font:
+          600 12px Lexend,
+          sans-serif;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      h2 {
+        font-size: 28px;
+        font-weight: 600;
+        margin: 4px 0 16px;
+      }
+      .s-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .s-card {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: var(--card);
+        padding: 10px;
+      }
+      .s-card:hover,
+      .card:hover {
+        border-color: var(--pine);
+      }
+      .s-card img {
+        width: 132px;
+        height: 116px;
+        border-radius: 14px;
+        object-fit: cover;
+        flex: none;
+      }
+      .tag-reason {
+        display: inline-block;
+        background: #f8e6bd;
+        border-radius: 999px;
+        padding: 1px 9px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .s-card h3 {
+        font-size: 20px;
+        margin: 6px 0 4px;
+      }
+      .s-card p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      /* Filters */
+      .bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        margin: 32px 0 20px;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .chip {
+        border: 1px solid var(--line);
+        background: #fff;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .chip:hover {
+        border-color: var(--pine);
+      }
+      .chip[aria-pressed="true"] {
+        background: var(--ink);
+        border-color: var(--ink);
+        color: #fff;
+      }
+      .sort {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .sort select {
+        height: 38px;
+        border: 1px solid var(--line);
+        border-radius: var(--ctl);
+        padding: 0 10px;
+        background: #fff;
+        color: var(--ink);
+      }
+
+      /* Cards */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        padding-bottom: 56px;
+      }
+      .card {
+        display: block;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: var(--card);
+        overflow: hidden;
+      }
+      .c-img {
+        position: relative;
+        aspect-ratio: 3/2;
+        background: var(--mist);
+      }
+      .c-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .pill {
+        position: absolute;
+        top: 10px;
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .pill.reg {
+        left: 10px;
+        background: #fff;
+      }
+      .pill.now {
+        right: 10px;
+        background: var(--sun);
+      }
+      .c-body {
+        padding: 16px;
+      }
+      .c-body h3 {
+        font-size: 17px;
+      }
+      .prov {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .tags {
+        display: flex;
+        gap: 6px;
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 12px;
+      }
+      .tags li {
+        background: var(--mist);
+        border-radius: 999px;
+        padding: 1px 9px;
+        font-size: 11px;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 0.7fr;
+        gap: 6px;
+        margin: 0;
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+      }
+      .stats dt {
+        font-size: 10.5px;
+        color: var(--muted);
+      }
+      .stats dd {
+        margin: 0;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .sk {
+        height: 300px;
+        border-radius: var(--card);
+        background: linear-gradient(
+          90deg,
+          #e9eeea 25%,
+          #f6f8f5 50%,
+          #e9eeea 75%
+        );
+        background-size: 200% 100%;
+        animation: sh 1.2s infinite;
+      }
+      @keyframes sh {
+        to {
+          background-position: -200% 0;
+        }
+      }
+      .state {
+        grid-column: 1/-1;
+        text-align: center;
+        padding: 48px 16px;
+        background: #fff;
+        border: 1px dashed var(--line);
+        border-radius: var(--card);
+      }
+      .state p {
+        margin: 0 0 14px;
+      }
+      .wake {
+        grid-column: 1/-1;
+        text-align: center;
+        color: var(--muted);
+      }
+      footer {
+        background: var(--ink);
+        color: #cfe0da;
+        font-size: 12px;
+      }
+      footer .wrap {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 18px;
+        padding-bottom: 18px;
+      }
+      footer b {
+        font-family: Lexend, sans-serif;
+        color: #fff;
+      }
+      dialog {
+        border: 0;
+        border-radius: var(--card);
+        padding: 24px;
+        max-width: 380px;
+        box-shadow: 0 16px 48px rgba(16, 48, 46, 0.3);
+      }
+      dialog::backdrop {
+        background: rgba(16, 48, 46, 0.5);
+      }
+      dialog p {
+        margin: 0 0 18px;
+        font-weight: 500;
+      }
+      dialog .row {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      @media (max-width: 1180px) {
+        .grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      @media (max-width: 1023px) {
+        .grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .s-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 767px) {
+        .menu-btn {
+          display: block;
+        }
+        .nav {
+          display: none;
+          order: 5;
+          flex-basis: 100%;
+          flex-direction: column;
+        }
+        .nav.open {
+          display: flex;
+        }
+        .top {
+          flex-wrap: wrap;
+        }
+        .auth {
+          order: 3;
+        }
+        h1 {
+          font-size: 34px;
+        }
+        h2 {
+          font-size: 23px;
+        }
+        .hero-body {
+          padding: 32px 0 56px;
+        }
+        .sort {
+          width: 100%;
+        }
+        .chips {
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          width: 100%;
+          padding-bottom: 6px;
+        }
+        .chip {
+          flex: none;
+        }
+      }
+      @media (max-width: 560px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .wrap {
+          padding: 0 16px;
+        }
+        footer .wrap {
+          flex-direction: column;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .sk {
+          animation: none;
+        }
+        html {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <svg
+        class="bg"
+        viewBox="0 0 1440 440"
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
+      >
+        <rect width="1440" height="440" fill="#6E8A83" />
+        <path
+          d="M60 300V210Q100 120 150 210V300zM560 300V190Q610 90 660 190V300zM1000 300V200Q1060 110 1110 200V300z"
+          fill="#8BA79F"
+          opacity=".6"
+        />
+        <path
+          d="M330 300V120Q360 -30 420 60Q470 20 500 130V300zM770 300V90Q800 -20 860 40Q930 10 960 120V300zM1150 300V130Q1200 -10 1290 40Q1400 0 1440 100V300z"
+          fill="#2F5C52"
+        />
+        <path d="M1280 300V170Q1330 90 1440 130V300z" fill="#214D44" />
+        <rect y="262" width="1440" height="178" fill="#3C6C66" />
+        <rect y="262" width="1440" height="3" fill="#4F807A" />
+        <path d="M640 300h130l-65-70zM650 300v70h110v-70z" fill="#7A3B25" />
+        <path d="M650 300h110" stroke="#5a2a1a" stroke-width="3" />
+        <path
+          d="M520 372h340M600 384h240"
+          stroke="#6F9A94"
+          stroke-width="3"
+          opacity=".6"
+        />
+      </svg>
+      <div class="wrap">
+        <div class="top">
+          <a class="logo" href="/" aria-label="Travelplan, về Trang chủ"
+            ><i>🧭</i>travelplan</a
+          >
+          <button
+            class="menu-btn"
+            id="menuBtn"
+            aria-expanded="false"
+            aria-controls="nav"
+          >
+            Menu
+          </button>
+          <nav class="nav" id="nav" aria-label="Chính">
+            <a href="/">Trang chủ</a>
+            <a href="/diem-den" aria-current="page">Điểm đến</a>
+            <a href="/lich-trinh-mau">Lịch trình mẫu</a>
+            <a href="/chuyen-di" data-auth="1">Chuyến đi của tôi</a>
+          </nav>
+          <div class="auth" id="auth"></div>
+        </div>
+        <div class="hero-body">
+          <div class="crumb"><a href="/">Trang chủ</a> / Điểm đến</div>
+          <h1>Điểm đến trong nước</h1>
+          <p>
+            Xem nơi nào hợp mùa, đi mấy ngày là vừa, tốn khoảng bao nhiêu, rồi
+            mở lịch trình người khác đã đi thật.
+          </p>
+          <div class="search">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#4A5E5B"
+              stroke-width="2.4"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-4-4" />
+            </svg>
+            <label class="sr" for="q">Tìm điểm đến</label>
+            <input
+              id="q"
+              type="search"
+              placeholder="Tìm tỉnh, thành phố hoặc vùng"
+              maxlength="100"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="season" id="season" hidden aria-labelledby="sTitle">
+        <div class="eyebrow">Theo mùa</div>
+        <h2 id="sTitle"></h2>
+        <div class="s-grid" id="sGrid"></div>
+      </section>
+
+      <div class="bar">
+        <div
+          class="chips"
+          id="chips"
+          role="group"
+          aria-label="Lọc điểm đến"
+        ></div>
+        <div class="sort">
+          <label for="sort">Sắp xếp</label>
+          <select id="sort">
+            <option value="lt">Nhiều lịch trình nhất</option>
+            <option value="ten">Tên A–Z</option>
+          </select>
+        </div>
+      </div>
+      <p class="sr" id="live" aria-live="polite"></p>
+      <div class="grid" id="grid" aria-busy="true"></div>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <b>travelplan</b
+        ><span>© 2026 travelplan · Đi nhiều, tính ít, chơi hết mình.</span>
+      </div>
+    </footer>
+    <dialog id="dlg">
+      <p id="dlgMsg"></p>
+      <div class="row" id="dlgBtns"></div>
+    </dialog>
+
+    <script>
+      /* ===== Cấu hình: chỉnh theo dự án ===== */
+      const API_BASE = window.TRAVELPLAN_API_BASE || ""; // ví dụ https://xxx.onrender.com
+      const TOKEN_KEY = "token"; // khóa JWT (UC 2: localStorage / sessionStorage)
+      const ROUTES = {
+        home: "/",
+        login: "/dang-nhap",
+        register: "/dang-ky",
+        trips: "/chuyen-di",
+        saved: "/da-luu",
+        detail: (s) => "/diem-den/" + encodeURIComponent(s), // Screen 4 (do người khác làm)
+      };
+      const P = new URLSearchParams(location.search);
+      // Dữ liệu mẫu (không cần backend) khi: URL có ?mock=1, hoặc mở thẳng file .html từ máy.
+      // Tùy chọn khi dùng dữ liệu mẫu: &thang=11 đổi tháng hiện tại, &khach=1 xem chế độ khách.
+      const USE_MOCK = P.has("mock") || location.protocol === "file:";
+
+      /* ===== Tiện ích ===== */
+      const $ = (s) => document.querySelector(s);
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      const fold = (s) =>
+        String(s || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/g, "d")
+          .replace(/Đ/g, "D")
+          .toLowerCase()
+          .trim();
+      const REGIONS = [
+        { k: "mien-bac", l: "Miền Bắc" },
+        { k: "mien-trung", l: "Miền Trung" },
+        { k: "tay-nguyen", l: "Tây Nguyên" },
+        { k: "mien-nam", l: "Miền Nam" },
+      ];
+      const TYPES = [
+        { k: "bien-dao", l: "Biển đảo" },
+        { k: "nui-rung", l: "Núi rừng" },
+      ];
+
+      /* Tháng hiện tại theo giờ Việt Nam (CBR 9) */
+      const realMonth = +new Intl.DateTimeFormat("en", {
+        month: "numeric",
+        timeZone: "Asia/Ho_Chi_Minh",
+      }).format(new Date());
+      const ovr = +P.get("thang");
+      const nowMonth = ovr >= 1 && ovr <= 12 ? ovr : USE_MOCK ? 10 : realMonth;
+      const nextMonth = (nowMonth % 12) + 1;
+
+      /* ===== Chuẩn hóa dữ liệu API (chịu được snake_case / camelCase) ===== */
+      function normRegion(v) {
+        const s = fold(v);
+        if (s.includes("tay nguyen") || s.includes("highland"))
+          return "tay-nguyen";
+        if (s.includes("trung") || s.includes("central")) return "mien-trung";
+        if (s.includes("bac") || s.includes("north")) return "mien-bac";
+        if (s.includes("nam") || s.includes("south")) return "mien-nam";
+        return "";
+      }
+      function normType(v, tags) {
+        const s = fold([v, ...(tags || [])].join(" "));
+        if (/bien|dao|beach|island|sea/.test(s)) return "bien-dao";
+        if (/nui|rung|trekking|mountain|forest/.test(s)) return "nui-rung";
+        return "";
+      }
+      function months(v) {
+        let a = Array.isArray(v) ? v : String(v || "").split(/[,\s]+/);
+        return [...new Set(a.map(Number).filter((n) => n >= 1 && n <= 12))];
+      }
+      function fmtMonths(a) {
+        const set = new Set(a);
+        if (set.size === 12) return "Quanh năm";
+        if (!set.size) return "—";
+        const out = [];
+        for (let s = 1; s <= 12; s++) {
+          if (set.has(s) && !set.has(((s + 10) % 12) + 1)) {
+            let e = s;
+            while (set.has((e % 12) + 1)) e = (e % 12) + 1;
+            out.push(s === e ? "T" + s : `T${s} – T${e}`);
+          }
+        }
+        return out.join(", ");
+      }
+      function fmtDays(v) {
+        if (typeof v === "string" && v.trim()) return v;
+        const n = +v;
+        return n ? (n === 1 ? "1 ngày" : `${n}N${n - 1}Đ`) : "—";
+      }
+      const REGION_ENUM = {
+        NORTH: "mien-bac",
+        CENTRAL: "mien-trung",
+        HIGHLANDS: "tay-nguyen",
+        SOUTH: "mien-nam",
+      }; // khớp REGIONS của destinationCatalog.service.js
+      const CATEGORY_ENUM = { BEACH: "bien-dao", MOUNTAIN: "nui-rung" }; // CULTURE không có chip riêng
+      function norm(d) {
+        const tags = (d.tags || [])
+          .map((t) => (typeof t === "string" ? t : t.name))
+          .filter(Boolean);
+        const best = months(d.best_months ?? d.bestMonths ?? d.good_months);
+        return {
+          slug: d.slug,
+          name: d.name,
+          province: d.province || "",
+          region:
+            REGION_ENUM[String(d.region).toUpperCase()] || normRegion(d.region),
+          type: d.category
+            ? CATEGORY_ENUM[String(d.category).toUpperCase()] || ""
+            : normType(d.type, tags),
+          tags: tags.slice(0, 2),
+          best,
+          days: fmtDays(
+            d.days_label ??
+              d.daysLabel ??
+              d.suggested_days ??
+              d.suggestedDays ??
+              d.days,
+          ),
+          count:
+            +(
+              d.itinerary_count ??
+              d.itineraryCount ??
+              d.itineraries_count ??
+              0
+            ) || 0,
+          img:
+            d.image ||
+            d.image_url ||
+            d.imageUrl ||
+            d.thumbnail ||
+            d.cover_url ||
+            "",
+          reason: d.season_label || d.seasonLabel || "",
+          note:
+            d.season_note ||
+            d.seasonNote ||
+            d.tagline ||
+            d.summary ||
+            d.description ||
+            "",
+        };
+      }
+
+      /* ===== Ảnh minh họa dự phòng (SVG) ===== */
+      const THEME = {
+        "da-lat": "hl",
+        "hoi-an": "tw",
+        hue: "tw",
+        "phu-quoc": "bc",
+        "nha-trang": "lh",
+        "quy-nhon": "bc",
+        "con-dao": "bc",
+        "sa-pa": "tr",
+        "ha-giang": "tr",
+        "ha-long": "bay",
+        "ninh-binh": "bay",
+        "vung-tau": "lh",
+      };
+      const PALM = (x, y) =>
+        `<path d="M${x} ${y + 60}Q${x + 6} ${y + 25} ${x} ${y}" stroke="#5a3a22" stroke-width="3" fill="none"/><path d="M${x} ${y}q-30-14-44 6q24-8 44-6zM${x} ${y}q30-14 44 6q-24-8-44-6zM${x} ${y}q-8-28-30-26q20 6 30 26zM${x} ${y}q8-28 30-26q-20 6-30 26z" fill="#1F4A41"/>`;
+      const PINES = [18, 52, 86, 230, 268, 300]
+        .map(
+          (x, i) =>
+            `<path d="M${x} 200l${i % 2 ? 12 : 16}-${i % 2 ? 40 : 52} ${i % 2 ? 12 : 16} ${i % 2 ? 40 : 52}z" fill="#1F4A41"/>`,
+        )
+        .join("");
+      const LANT = [30, 70, 110, 150, 190, 230, 270, 300]
+        .map(
+          (x, i) =>
+            `<circle cx="${x}" cy="${22 + (i % 3) * 8}" r="3.5" fill="${i % 2 ? "#E8B23A" : "#D9512C"}"/><path d="M${x} 0v${18 + (i % 3) * 8}" stroke="#554" stroke-width=".6"/>`,
+        )
+        .join("");
+      const WIN = [0, 1, 2, 3]
+        .map(
+          (i) =>
+            `<rect x="${34 + i * 75}" y="102" width="12" height="16" fill="#2B2A66"/><rect x="${56 + i * 75}" y="102" width="12" height="16" fill="#2B2A66"/><rect x="${44 + i * 75}" y="124" width="14" height="11" fill="#8a3a22"/>`,
+        )
+        .join("");
+      const TERR = [0, 1, 2, 3, 4]
+        .map(
+          (i) =>
+            `<path d="M0 ${128 + i * 14}Q160 ${118 + i * 14} 320 ${130 + i * 14}V${142 + i * 14}Q160 ${132 + i * 14} 0 ${140 + i * 14}z" fill="${i % 2 ? "#8E9B3A" : "#C2B24E"}"/>`,
+        )
+        .join("");
+      const ART = {
+        hl:
+          '<rect width="320" height="200" fill="#F4CFA8"/><circle cx="230" cy="62" r="22" fill="#FBE8CC"/><path d="M0 100Q90 70 170 98T320 88V200H0z" fill="#B7CBA2"/><path d="M0 125Q100 100 200 122T320 112V200H0z" fill="#8FB08A"/><path d="M0 150Q100 130 200 148T320 140V200H0z" fill="#5E8C6C"/><path d="M60 168Q160 156 250 168V200H60z" fill="#8CB5B0"/>' +
+          PINES,
+        tw:
+          '<rect width="320" height="200" fill="#2B2A66"/>' +
+          LANT +
+          '<g fill="#E8B23A"><rect x="20" y="84" width="60" height="56"/><rect x="95" y="84" width="60" height="56"/><rect x="170" y="84" width="60" height="56"/><rect x="245" y="84" width="60" height="56"/></g><g fill="#8a3a22"><path d="M14 84h72l-12-16H26zM89 84h72l-12-16H101zM164 84h72l-12-16H176zM239 84h72l-12-16H251z"/></g>' +
+          WIN +
+          '<rect y="140" width="320" height="60" fill="#243B63"/><path d="M110 168h80l-14 12h-52z" fill="#c24a2a"/>',
+        bc:
+          '<rect width="320" height="200" fill="#F59F78"/><circle cx="160" cy="92" r="26" fill="#F9C46B"/><rect y="104" width="320" height="52" fill="#3D86A8"/><path d="M145 126l14-14 3 14z" fill="#fff" opacity=".9"/><path d="M0 152Q160 138 320 152V200H0z" fill="#F0DCA8"/>' +
+          PALM(48, 98) +
+          PALM(272, 104),
+        lh: '<rect width="320" height="200" fill="#C3DEEC"/><path d="M60 120Q150 40 250 120z" fill="#5E8C5A"/><path d="M110 120Q170 70 240 120z" fill="#4B7A4E"/><rect x="226" y="52" width="10" height="36" fill="#fff"/><rect x="224" y="46" width="14" height="7" fill="#D9512C"/><rect y="118" width="320" height="56" fill="#3B88AE"/><path d="M90 140h60M170 152h80" stroke="#8CC1D8" stroke-width="2"/><path d="M110 134l12-14v14z" fill="#fff"/><path d="M0 172Q160 160 320 172V200H0z" fill="#F0DCA8"/>',
+        tr:
+          '<rect width="320" height="200" fill="#CFE0E8"/><path d="M0 112l60-52 50 42 60-48 70 58 80-36V200H0z" fill="#8A9AA0"/><path d="M60 60l14 14-10 4zM170 54l12 14-10 3z" fill="#B7C4C8"/>' +
+          TERR +
+          '<path d="M222 138h28v14h-28z" fill="#6B3F26"/><path d="M218 138l18-14 18 14z" fill="#8a3a22"/>',
+        bay: '<rect width="320" height="200" fill="#DDE6E0"/><path d="M14 132V96Q46 36 80 96V132zM104 132V78Q148 12 192 78V132zM216 132V100Q250 52 296 100V132z" fill="#4C8A83"/><path d="M104 132V96Q148 70 192 96V132z" fill="#5E9A92" opacity=".7"/><rect y="126" width="320" height="74" fill="#6FA3A3"/><path d="M128 164h64l-10 12h-44z" fill="#c24a2a"/><path d="M158 164V140l20 24z" fill="#c24a2a"/><path d="M40 150h50M220 168h60" stroke="#9CC4C4" stroke-width="2"/>',
+      };
+      const artCache = {};
+      function art(d) {
+        const t =
+          THEME[d.slug] ||
+          (d.type === "bien-dao"
+            ? "bc"
+            : d.type === "nui-rung"
+              ? "tr"
+              : d.region === "tay-nguyen"
+                ? "hl"
+                : d.region === "mien-trung"
+                  ? "tw"
+                  : d.region === "mien-bac"
+                    ? "bay"
+                    : "bc");
+        return (
+          artCache[t] ||
+          (artCache[t] =
+            "data:image/svg+xml," +
+            encodeURIComponent(
+              `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice">${ART[t]}</svg>`,
+            ))
+        );
+      }
+      const imgTag = (d, cls) =>
+        `<img src="${esc(d.img || art(d))}" alt="Ảnh minh họa ${esc(d.name)}" loading="lazy" data-fb="${esc(art(d))}">`;
+
+      /* ===== Dữ liệu mẫu (?mock=1) ===== */
+      const MOCK = [
+        [
+          "da-lat",
+          "Đà Lạt",
+          "Lâm Đồng",
+          "Tây Nguyên",
+          ["Núi đồi", "Cà phê"],
+          [12, 1, 2, 3, 4],
+          "3N2Đ",
+          128,
+          "Dã quỳ nở",
+          "Cuối mùa mưa, đổi núi vàng hoa dã quỳ.",
+        ],
+        [
+          "hoi-an",
+          "Hội An",
+          "Quảng Nam",
+          "Miền Trung",
+          ["Phố cổ", "Ẩm thực"],
+          [2, 3, 4, 5],
+          "2N1Đ",
+          96,
+        ],
+        [
+          "phu-quoc",
+          "Phú Quốc",
+          "Kiên Giang",
+          "Miền Nam",
+          ["Biển đảo", "Lặn biển"],
+          [11, 12, 1, 2, 3, 4],
+          "4N3Đ",
+          74,
+          "Trời trong",
+          "Biển lặng, nắng đẹp, hợp lặn ngắm san hô.",
+        ],
+        [
+          "sa-pa",
+          "Sa Pa",
+          "Lào Cai",
+          "Miền Bắc",
+          ["Núi rừng", "Trekking"],
+          [9, 10, 11],
+          "3N2Đ",
+          61,
+          "Trời trong",
+          "Sau mùa lúa chín, trời mát, hợp trekking bản làng.",
+        ],
+        [
+          "ha-long",
+          "Hạ Long",
+          "Quảng Ninh",
+          "Miền Bắc",
+          ["Biển đảo", "Du thuyền"],
+          [10, 11, 12],
+          "2N1Đ",
+          52,
+          "Ít mưa",
+          "Biển êm, trời khô ráo, hợp ngủ đêm trên vịnh.",
+        ],
+        [
+          "vung-tau",
+          "Vũng Tàu",
+          "Bà Rịa – Vũng Tàu",
+          "Miền Nam",
+          ["Biển", "Cuối tuần"],
+          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+          "1 – 2 ngày",
+          47,
+        ],
+        [
+          "ninh-binh",
+          "Ninh Bình",
+          "Ninh Bình",
+          "Miền Bắc",
+          ["Hang động", "Đi thuyền"],
+          [5, 6],
+          "2N1Đ",
+          39,
+        ],
+        [
+          "hue",
+          "Huế",
+          "Thừa Thiên Huế",
+          "Miền Trung",
+          ["Di tích", "Ẩm thực"],
+          [1, 2, 3, 4],
+          "2N1Đ",
+          35,
+        ],
+        [
+          "nha-trang",
+          "Nha Trang",
+          "Khánh Hòa",
+          "Miền Trung",
+          ["Biển đảo", "Lặn biển"],
+          [1, 2, 3, 4, 5, 6, 7, 8],
+          "3N2Đ",
+          33,
+        ],
+        [
+          "ha-giang",
+          "Hà Giang",
+          "Hà Giang",
+          "Miền Bắc",
+          ["Núi rừng", "Phượt"],
+          [10, 11],
+          "4N3Đ",
+          28,
+          "Hoa tam giác mạch",
+          "Cuối thu, đồng hoa nở rộ, đèo cao trời khô.",
+        ],
+        [
+          "quy-nhon",
+          "Quy Nhơn",
+          "Bình Định",
+          "Miền Trung",
+          ["Biển", "Hải sản"],
+          [3, 4, 5, 6, 7, 8],
+          "3N2Đ",
+          21,
+        ],
+        [
+          "con-dao",
+          "Côn Đảo",
+          "Bà Rịa – Vũng Tàu",
+          "Miền Nam",
+          ["Biển đảo", "Lịch sử"],
+          [3, 4, 5, 6, 7, 8, 9],
+          "3N2Đ",
+          14,
+        ],
+      ].map((a) => ({
+        slug: a[0],
+        name: a[1],
+        province: a[2],
+        region: a[3],
+        tags: a[4],
+        best_months: a[5],
+        days_label: a[6],
+        itinerary_count: a[7],
+        season_label: a[8],
+        season_note: a[9],
+      }));
+
+      /* ===== Trạng thái ===== */
+      let ALL = [];
+      const st = { q: "", chip: "", sort: "lt" }; // chip: 'all' | key vùng | key loại (chọn một)
+      const chipKeys = [...REGIONS, ...TYPES].map((x) => x.k);
+
+      function readUrl() {
+        const p = new URLSearchParams(location.search);
+        st.q = (p.get("q") || "").slice(0, 100);
+        const v = p.get("vung"),
+          l = p.get("loai");
+        st.chip = REGIONS.some((r) => r.k === v)
+          ? v
+          : TYPES.some((t) => t.k === l)
+            ? l
+            : "";
+        st.sort = p.get("sapxep") === "ten" ? "ten" : "lt";
+        $("#q").value = st.q;
+        $("#sort").value = st.sort;
+      }
+      function writeUrl() {
+        const p = new URLSearchParams(location.search);
+        ["q", "vung", "loai", "sapxep"].forEach((k) => p.delete(k));
+        if (st.q) p.set("q", st.q);
+        if (REGIONS.some((r) => r.k === st.chip)) p.set("vung", st.chip);
+        if (TYPES.some((t) => t.k === st.chip)) p.set("loai", st.chip);
+        if (st.sort !== "lt") p.set("sapxep", st.sort);
+        const s = p.toString();
+        history.replaceState(null, "", location.pathname + (s ? "?" + s : ""));
+      }
+
+      /* ===== Hiển thị ===== */
+      function matchQ(d) {
+        if (!st.q) return true;
+        const q = fold(st.q);
+        const rl = (REGIONS.find((r) => r.k === d.region) || {}).l || "";
+        return (
+          fold(d.name).includes(q) ||
+          fold(d.province).includes(q) ||
+          fold(rl).includes(q)
+        );
+      } // BR 30
+      function card(d) {
+        const rl = (REGIONS.find((r) => r.k === d.region) || {}).l;
+        return `<a class="card" href="${ROUTES.detail(d.slug)}">
+  <div class="c-img">${imgTag(d)}${rl ? `<span class="pill reg">${rl}</span>` : ""}${d.best.includes(nowMonth) ? '<span class="pill now">Đang vào mùa</span>' : ""}</div>
+  <div class="c-body"><h3>${esc(d.name)}</h3><p class="prov">${esc(d.province)}</p>
+  <ul class="tags">${d.tags.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
+  <dl class="stats"><div><dt>Hợp đi</dt><dd>${fmtMonths(d.best)}</dd></div><div><dt>Đi mấy ngày</dt><dd>${esc(d.days)}</dd></div><div><dt>Lịch trình</dt><dd>${d.count.toLocaleString("vi-VN")}</dd></div></dl></div></a>`;
+      } // BR 29
+
+      function renderSeason() {
+        const box = $("#season");
+        const pick = ALL.filter(
+          (d) => d.best.includes(nowMonth) || d.best.includes(nextMonth),
+        )
+          .sort(
+            (a, b) =>
+              b.best.includes(nowMonth) - a.best.includes(nowMonth) ||
+              a.best.length - b.best.length ||
+              b.count - a.count,
+          )
+          .slice(0, 3); // BR 28
+        box.hidden = !pick.length;
+        if (!pick.length) return;
+        $("#sTitle").textContent =
+          `Tháng ${nowMonth}, ${nextMonth} nên đi đâu?`;
+        $("#sGrid").innerHTML = pick
+          .map(
+            (
+              d,
+            ) => `<a class="s-card" href="${ROUTES.detail(d.slug)}">${imgTag(d)}<div>
+    <span class="tag-reason">${esc(d.reason || (d.best.includes(nowMonth) ? "Đang vào mùa" : "Sắp vào mùa"))}</span>
+    <h3>${esc(d.name)}</h3><p>${esc(d.note.length > 90 ? d.note.slice(0, 87) + "…" : d.note)}</p></div></a>`,
+          )
+          .join("");
+      }
+
+      function renderChips() {
+        const base = ALL.filter(matchQ);
+        const cnt = (k) => base.filter((d) => d.region === k).length;
+        const mk = (k, l, c) =>
+          `<button type="button" class="chip" data-k="${k}" aria-pressed="${(st.chip || "all") === k}">${l}${c == null ? "" : " · " + c}</button>`;
+        $("#chips").innerHTML =
+          mk("all", "Tất cả", base.length) +
+          REGIONS.map((r) => mk(r.k, r.l, cnt(r.k))).join("") +
+          TYPES.map((t) => mk(t.k, t.l)).join("");
+      } // BR 31
+
+      function renderGrid() {
+        let list = ALL.filter(matchQ).filter(
+          (d) => !st.chip || d.region === st.chip || d.type === st.chip,
+        );
+        list.sort(
+          st.sort === "ten"
+            ? (a, b) => a.name.localeCompare(b.name, "vi")
+            : (a, b) => b.count - a.count || a.name.localeCompare(b.name, "vi"),
+        );
+        const g = $("#grid");
+        g.setAttribute("aria-busy", "false");
+        g.innerHTML = list.length
+          ? list.map(card).join("")
+          : `<div class="state"><p>Chưa có điểm đến phù hợp. Thử từ khóa khác hoặc bỏ bộ lọc.</p><button class="btn" id="reset">Xóa bộ lọc</button></div>`;
+        $("#live").textContent = `${list.length} điểm đến`;
+        const r = $("#reset");
+        if (r)
+          r.onclick = () => {
+            st.q = "";
+            st.chip = "";
+            $("#q").value = "";
+            update();
+          };
+      }
+      function update() {
+        writeUrl();
+        renderChips();
+        renderGrid();
+      }
+
+      /* ===== Tải dữ liệu (NFR 2: skeleton + dòng đánh thức máy chủ) ===== */
+      async function load() {
+        const g = $("#grid");
+        g.setAttribute("aria-busy", "true");
+        g.innerHTML = Array(8).fill('<div class="sk"></div>').join("");
+        const wake = setTimeout(
+          () =>
+            g.insertAdjacentHTML(
+              "afterbegin",
+              '<p class="wake" role="status">Đang đánh thức máy chủ…</p>',
+            ),
+          2500,
+        );
+        try {
+          let raw;
+          if (USE_MOCK) raw = MOCK;
+          else {
+            const ctl = new AbortController(),
+              to = setTimeout(() => ctl.abort(), 60000);
+            const r = await fetch(
+              API_BASE + "/api/public/destinations?size=100",
+              {
+                signal: ctl.signal,
+                headers: { Accept: "application/json" },
+              },
+            );
+            clearTimeout(to);
+            if (!r.ok) throw new Error(r.status);
+            const j = await r.json();
+            raw = Array.isArray(j) ? j : j.items || j.content || j.data || [];
+          }
+          ALL = raw.map(norm).filter((d) => d.slug && d.name);
+          renderSeason();
+          update();
+        } catch (e) {
+          $("#season").hidden = true;
+          $("#chips").innerHTML = "";
+          g.setAttribute("aria-busy", "false");
+          g.innerHTML =
+            '<div class="state" role="alert"><p>Chưa tải được danh sách điểm đến. Kiểm tra kết nối rồi thử lại.</p><button class="btn" id="retry">Thử lại</button></div>';
+          $("#retry").onclick = load;
+        } finally {
+          clearTimeout(wake);
+        }
+      }
+
+      /* ===== Header: khách / thành viên ===== */
+      const getToken = () =>
+        localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+      const here = () => location.pathname + location.search;
+      const loginUrl = () =>
+        ROUTES.login + "?next=" + encodeURIComponent(here());
+      function dialog(msg, btns) {
+        return new Promise((res) => {
+          const d = $("#dlg");
+          $("#dlgMsg").textContent = msg;
+          const row = $("#dlgBtns");
+          row.innerHTML = "";
+          btns.forEach((b) => {
+            const el = document.createElement("button");
+            el.className = "btn " + (b.cls || "");
+            el.textContent = b.t;
+            el.onclick = () => {
+              d.close();
+              res(b.v);
+            };
+            row.appendChild(el);
+          });
+          d.oncancel = (e) => {
+            if (btns.length < 2) e.preventDefault();
+            else res(false);
+          };
+          d.showModal();
+        });
+      }
+      function guestHeader() {
+        $("#auth").innerHTML =
+          `<a class="btn ghost" href="${loginUrl()}">Đăng nhập</a><a class="btn" href="${ROUTES.register}">Đăng ký miễn phí</a>`;
+        document
+          .querySelectorAll("[data-auth]")
+          .forEach(
+            (a) =>
+              (a.href =
+                ROUTES.login + "?next=" + encodeURIComponent(ROUTES.trips)),
+          );
+      } // CBR 3
+      function initials(n) {
+        const w = fold(n).split(/\s+/).filter(Boolean);
+        if (!w.length) return "TV";
+        return (
+          w[0][0] + (w.length > 1 ? w[w.length - 1][0] : "")
+        ).toUpperCase();
+      }
+      function memberHeader(name) {
+        const a = $("#auth");
+        a.innerHTML = `<button class="avatar" id="av" aria-haspopup="true" aria-expanded="false" aria-label="Menu tài khoản">${esc(initials(name))}</button>
+  <div class="acc" id="acc" hidden><a href="${ROUTES.saved}">Đã lưu</a><button type="button" id="out">Đăng xuất</button></div>`;
+        const av = $("#av"),
+          acc = $("#acc");
+        const close = () => {
+          acc.hidden = true;
+          av.setAttribute("aria-expanded", "false");
+        };
+        av.onclick = (e) => {
+          e.stopPropagation();
+          acc.hidden = !acc.hidden;
+          av.setAttribute("aria-expanded", String(!acc.hidden));
+        };
+        document.addEventListener("click", close);
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            close();
+            av.focus();
+          }
+        });
+        $("#out").onclick = async () => {
+          close(); // UC 3, BR 11
+          if (
+            await dialog("Bạn có chắc muốn đăng xuất?", [
+              { t: "Hủy", v: false, cls: "light" },
+              { t: "Đăng xuất", v: true },
+            ])
+          ) {
+            localStorage.removeItem(TOKEN_KEY);
+            sessionStorage.removeItem(TOKEN_KEY);
+            location.href = ROUTES.home;
+          }
+        };
+      }
+      async function initAuth() {
+        const t = getToken();
+        if (USE_MOCK && !P.has("khach")) return memberHeader("Duy Đỗ");
+        if (!t) return guestHeader();
+        try {
+          const r = await fetch(API_BASE + "/api/auth/me", {
+            headers: { Authorization: "Bearer " + t },
+          });
+          if (r.status === 401) {
+            localStorage.removeItem(TOKEN_KEY);
+            sessionStorage.removeItem(TOKEN_KEY); // BR 12
+            await dialog(
+              "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+              [{ t: "OK", v: true }],
+            );
+            location.href = loginUrl();
+            return;
+          }
+          if (!r.ok) throw 0;
+          const u = await r.json();
+          memberHeader(
+            u.name ||
+              u.fullName ||
+              u.displayName ||
+              u.username ||
+              (u.email || "").split("@")[0],
+          );
+        } catch (e) {
+          guestHeader();
+        }
+      }
+
+      /* ===== Sự kiện ===== */
+      let tm;
+      $("#q").addEventListener("input", (e) => {
+        clearTimeout(tm);
+        tm = setTimeout(() => {
+          st.q = e.target.value.trim();
+          update();
+        }, 150);
+      });
+      $("#chips").addEventListener("click", (e) => {
+        const b = e.target.closest(".chip");
+        if (!b) return;
+        const k = b.dataset.k;
+        st.chip = k === "all" || st.chip === k ? "" : k;
+        update();
+      });
+      $("#sort").addEventListener("change", (e) => {
+        st.sort = e.target.value;
+        update();
+      });
+      $("#menuBtn").addEventListener("click", (e) => {
+        const n = $("#nav"),
+          o = n.classList.toggle("open");
+        e.currentTarget.setAttribute("aria-expanded", String(o));
+      });
+      document.addEventListener(
+        "error",
+        (e) => {
+          const i = e.target;
+          if (i.tagName === "IMG" && i.dataset.fb && i.src !== i.dataset.fb)
+            i.src = i.dataset.fb;
+        },
+        true,
+      );
+
+      readUrl();
+      initAuth();
+      load();
+    </script>
+  </body>
+</html>
