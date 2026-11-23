@@ -13,7 +13,7 @@ datasource db {
 
 enum Role {
   USER
-  ADMIN
+  CONTENT_ADMIN
 }
 
 enum ExpenseCategory {
