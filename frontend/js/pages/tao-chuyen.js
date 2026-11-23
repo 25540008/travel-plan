@@ -8,7 +8,8 @@ import { msg } from '../messages.js';
 import { formatDuration, formatMoney, formatDayMonth, toDate } from '../format.js';
 import { coverHtml } from '../cover.js';
 import { tripStatus, isoDate, todayVN, escapeHtml } from '../trip-utils.js';
-import { searchPlaces, addBaseLayer } from '../geo.js';
+import { searchPlaces } from '../geo.js';
+import { createMap } from '../maps.js';
 import {
   toast, confirmDialog, validateInput, showFieldError, clearFieldError, applyServerErrors, setFlash,
 } from '../ui.js';
@@ -181,8 +182,7 @@ const placeList = $('place-list');
 let placeTimer = null;
 let placeAbort = null;
 let placeResults = [];
-let pinMap = null;
-let pinMarker = null;
+let pinMap = null; // Promise bản đồ ghim điểm đến (js/maps.js)
 
 function closePlaces() {
   placeList.hidden = true;
@@ -266,16 +266,10 @@ function setPlace(place) {
   const { latitude: lat, longitude: lng } = place;
   $('place-coords').textContent = `Đã ghim: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
   $('place-gmaps').href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-  if (!window.L) return;
-  if (!pinMap) {
-    pinMap = L.map('place-map', { scrollWheelZoom: false }).setView([lat, lng], 11);
-    addBaseLayer(pinMap);
-    pinMarker = L.marker([lat, lng]).addTo(pinMap);
-  } else {
-    pinMap.setView([lat, lng], 11);
-    pinMarker.setLatLng([lat, lng]);
-  }
-  setTimeout(() => pinMap.invalidateSize(), 0);
+  pinMap ||= createMap($('place-map'), { center: [lat, lng], zoom: 11 });
+  pinMap.then((view) => {
+    if (view && state.place === place) view.showMarker([lat, lng], 11);
+  });
 }
 
 /* ---------- Ngân sách ---------- */

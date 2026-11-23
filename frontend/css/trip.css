@@ -206,3 +206,4 @@
   .time-wheel select { width: 64px; }
   .shared-list li { grid-template-columns: 1fr; gap: var(--space-1); }
 }
+.map-dot span { display: block; width: 16px; height: 16px; border-radius: 50%; background: var(--coral); border: 3px solid var(--white); box-shadow: 0 2px 6px rgba(0, 0, 0, .3); }

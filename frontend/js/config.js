@@ -4,6 +4,14 @@ const isLocal = ['localhost', '127.0.0.1', ''].includes(location.hostname);
 
 export const API_BASE = window.TRAVELPLAN_API_BASE || (isLocal ? 'http://localhost:3000/api' : API_PROD);
 
+// Google Maps (bản đồ Screen 4, 6, 7 và tìm địa điểm Screen 6, 8). Để trống → dùng OpenStreetMap + Nominatim như cũ.
+// Key trình duyệt lấy ở Google Cloud Console, bật "Maps JavaScript API" và "Places API (New)",
+// giới hạn key theo HTTP referrer (localhost, domain Render) vì key này lộ ra phía trình duyệt.
+// Có thể đặt tạm không sửa file: <script>window.TRAVELPLAN_GOOGLE_MAPS_KEY = '...'</script> trước các script module.
+export const GOOGLE_MAPS_API_KEY = window.TRAVELPLAN_GOOGLE_MAPS_KEY || '';
+// Map ID (Google Cloud → Map Management) cho marker kiểu mới; 'DEMO_MAP_ID' dùng được khi phát triển.
+export const GOOGLE_MAPS_MAP_ID = window.TRAVELPLAN_GOOGLE_MAPS_MAP_ID || 'DEMO_MAP_ID';
+
 // Tên file của từng màn hình. Trang mới thêm vào đây để header, chuyển hướng dùng chung.
 export const PAGES = {
   home: 'index.html',                    // Screen 1
