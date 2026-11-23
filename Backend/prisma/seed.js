@@ -8,6 +8,8 @@ const prisma = new PrismaClient();
 
 export const DEMO_EMAIL = 'demo@travelplan.vn';
 export const DEMO_PASSWORD = 'Demo@123';
+export const ADMIN_EMAIL = 'admin@travelplan.vn';
+export const ADMIN_PASSWORD = 'Admin@123';
 
 const destinations = [
   { name: 'Đà Lạt', address: 'Lâm Đồng, Việt Nam', latitude: 11.9404192, longitude: 108.4583132, description: 'Thành phố ngàn hoa với khí hậu mát mẻ quanh năm' },
@@ -64,6 +66,18 @@ async function main() {
     where: { email: DEMO_EMAIL },
     update: { passwordHash },
     create: { fullName: 'Nguyễn Văn A', email: DEMO_EMAIL, passwordHash },
+  });
+
+  const adminHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+  await prisma.user.upsert({
+    where: { email: ADMIN_EMAIL },
+    update: { passwordHash: adminHash, role: 'CONTENT_ADMIN' },
+    create: {
+      fullName: 'Quản trị nội dung',
+      email: ADMIN_EMAIL,
+      passwordHash: adminHash,
+      role: 'CONTENT_ADMIN',
+    },
   });
 
   const daLat = await prisma.destination.findFirst({ where: { name: 'Đà Lạt' } });
