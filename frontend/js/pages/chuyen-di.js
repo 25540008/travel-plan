@@ -342,7 +342,7 @@ document.querySelectorAll('.trip-tab').forEach((tab) =>
     document.querySelectorAll('.trip-tab').forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
     $('panel-itinerary').hidden = isBudget;
     $('panel-budget').hidden = !isBudget;
-    if (!isBudget) map?.invalidateSize();
+    if (!isBudget) mapPromise?.then((view) => view?.resize()); // khung bản đồ vừa hiện lại
     emit('tab', { tab: tab.dataset.tab });
   }),
 );

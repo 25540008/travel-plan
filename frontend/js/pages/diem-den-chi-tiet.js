@@ -33,6 +33,7 @@ import { coverHtml } from '../cover.js';
 import { weatherIcon, wmoLabel } from '../weather.js';
 import { createMap } from '../maps.js';
 import { bindReuseSave, loadSaved, markSaved, runPendingAction } from '../reuse-save.js';
+import { openAddToTrip } from '../add-to-trip.js';
 
 const $ = (id) => document.getElementById(id);
 const slug = (new URLSearchParams(location.search).get('slug') || '').trim().toLowerCase();
@@ -67,12 +68,15 @@ function spotType(t = '') {
 }
 
 function normalizeSpot(s, i) {
-  const type = spotType(s.type);
+  const raw = s.type ?? s.category; // API TP-43 trả category + categoryLabel
+  const type = spotType(raw);
   return {
     id: s.id ?? i + 1,
     name: s.name || '',
     type,
-    label: s.label || (SPOT_TYPES[String(s.type).toUpperCase()] ? SPOT_TYPES[type] : s.type) || SPOT_TYPES[type],
+    category: String(raw || '').toUpperCase(),
+    outdoor: s.outdoor,
+    label: s.label || s.categoryLabel || (SPOT_TYPES[String(raw).toUpperCase()] ? SPOT_TYPES[type] : raw) || SPOT_TYPES[type],
     note: s.note || s.description || '',
     lat: num(s.lat ?? s.latitude),
     lng: num(s.lng ?? s.longitude),
@@ -81,30 +85,44 @@ function normalizeSpot(s, i) {
   };
 }
 
+/** Chi phí: mảng [{ item, min, max }] hoặc dạng API TP-43 { trip, items: [{ label, amount, note }], source }. */
+function costsOf(c) {
+  const items = Array.isArray(c) ? c : arr(c?.items);
+  return items
+    .map((x) => ({ item: x.item || x.name || x.label, min: num(x.min ?? x.amount), max: num(x.max ?? x.min ?? x.amount) }))
+    .filter((x) => x.item && x.min != null);
+}
+
 export function normalizeDestination(d) {
-  const special = d.specialMonths ?? d.special_months;
+  // API TP-43 gom tháng đẹp / nhiệt độ vào bestTimeChart.months [{ month, level: BEST|OK|SPECIAL, avgTemp }]
+  const chart = arr(d.bestTimeChart?.months);
+  const chartMonths = (level) => chart.filter((m) => m.level === level).map((m) => m.month);
+  const special = d.specialMonths ?? d.special_months ?? (chart.length ? chartMonths('SPECIAL') : undefined);
+  const quick = d.quickInfo || {};
   return {
     id: d.id,
     slug: d.slug || slug,
     name: d.name || '',
     province: d.province || (d.address ? d.address.split(',')[0].trim() : ''),
-    region: d.region || '',
+    region: d.regionLabel || d.region || '',
+    regionCode: d.region || '',
     tagline: d.summary || d.tagline || '',
     description: d.description || d.summary || '',
     tags: arr(d.tags).filter(Boolean),
     imageUrl: d.coverUrl || d.cover_url || d.imageUrl || d.image_url || null,
     lat: num(d.lat ?? d.latitude),
     lng: num(d.lng ?? d.longitude),
-    bestMonths: monthsOf(d.bestMonths ?? d.best_months),
+    bestMonths: monthsOf(d.bestMonths ?? d.best_months ?? chartMonths('BEST')),
     specialMonths: monthsOf(Array.isArray(special) ? special : special?.months),
-    specialLabel: (!Array.isArray(special) && special?.label) || d.specialLabel || 'Mùa đặc biệt',
-    avgTemp: tempsOf(d.avgTempByMonth ?? d.avg_temp_by_month),
+    specialLabel: (!Array.isArray(special) && special?.label) || d.specialLabel || d.bestTimeChart?.specialNote || 'Mùa đặc biệt',
+    avgTemp: tempsOf(d.avgTempByMonth ?? d.avg_temp_by_month ?? (chart.length ? chart.map((m) => m.avgTemp) : undefined)),
     suggestedDays: num(d.suggestedDays ?? d.suggested_days),
+    suggestedDaysLabel: quick.suggestedDays || '',
+    fromHcm: quick.fromHcm || '',
     spots: arr(d.spots).map(normalizeSpot).filter((s) => s.name),
-    costs: arr(d.costs)
-      .map((c) => ({ item: c.item || c.name, min: num(c.min ?? c.amount), max: num(c.max ?? c.min ?? c.amount) }))
-      .filter((c) => c.item && c.min != null),
-    costNote: d.costNote || d.cost_note || '',
+    costs: costsOf(d.costs),
+    costTrip: d.costs?.trip || '',
+    costNote: d.costNote || d.cost_note || d.costs?.source || '',
     nearby: arr(d.nearby),
   };
 }
@@ -188,7 +206,7 @@ function renderHero(d) {
   document.title = `${d.name} · Điểm đến · Travelplan`;
   $('dd-hero-art').innerHTML = coverHtml({ coverImage: d.imageUrl, destination: d.name }, 'dd-hero-img');
   const crumbs = [`<a href="${pageUrl('destinations')}">Điểm đến</a>`];
-  if (d.region) crumbs.push(`<a href="${pageUrl('destinations', { region: d.region })}">${escapeHtml(d.region)}</a>`);
+  if (d.region) crumbs.push(`<a href="${pageUrl('destinations', { region: d.regionCode || d.region })}">${escapeHtml(d.region)}</a>`);
   if (d.province && normalizeText(d.province) !== normalizeText(d.name)) crumbs.push(`<span>${escapeHtml(d.province)}</span>`);
   $('dd-breadcrumb').innerHTML = crumbs.join('<span aria-hidden="true"> / </span>');
   $('dd-name').textContent = d.name;
@@ -228,13 +246,18 @@ function renderFacts(d, itin) {
       const ways = [];
       if (road <= 450) ways.push(roadTime(km).replace('xe', 'xe khách'));
       if (km >= 150) ways.push(flightTime(km));
-      facts.push({ icon: 'bus', label: 'Từ TP.HCM', value: `~${road.toLocaleString('vi-VN')} km`, sub: ways.join(' · ') });
+      facts.push({ icon: 'bus', label: 'Từ TP.HCM', value: `~${road.toLocaleString('vi-VN')} km`, sub: d.fromHcm || ways.join(' · ') });
     }
   }
 
   const days = itin.popularDays || d.suggestedDays;
-  if (days) {
-    facts.push({ icon: 'cal', label: 'Đi mấy ngày', value: durationLabel(days), sub: itin.popularDays ? 'Phổ biến nhất trong lịch trình' : 'Gợi ý cho lần đầu' });
+  if (days || d.suggestedDaysLabel) {
+    facts.push({
+      icon: 'cal',
+      label: 'Đi mấy ngày',
+      value: days ? durationLabel(days) : d.suggestedDaysLabel,
+      sub: itin.popularDays ? 'Phổ biến nhất trong lịch trình' : 'Gợi ý cho lần đầu',
+    });
   }
 
   if (itin.total != null) {
@@ -303,14 +326,22 @@ function renderSpots(d) {
 
 /**
  * UC 23 Thêm địa điểm gợi ý vào chuyến (TP-47, Screen 4 → Screen 8). Khách → Screen 10 (CBR 3).
- * Thành viên: phát sự kiện "travelplan:add-spot" để TP-47 gắn popup chọn chuyến; chưa có ai xử lý thì báo tạm.
+ * Thành viên: popup chọn chuyến + ngày (js/add-to-trip.js), rồi sang Screen 7 mở sẵn popup hoạt động đã điền.
  */
 function addSpot(d, spotId) {
   if (!isLoggedIn()) return redirectToLogin({ action: 'addSpot', id: spotId });
   const spot = d.spots.find((s) => String(s.id) === String(spotId));
   if (!spot) return;
-  const ev = new CustomEvent('travelplan:add-spot', { detail: { destination: d, spot }, cancelable: true });
-  if (document.dispatchEvent(ev)) toast('Chức năng Thêm vào chuyến đang được hoàn thiện.', 'warning');
+  openAddToTrip({
+    id: spot.id,
+    name: spot.name,
+    address: [spot.name, d.province || d.name].filter(Boolean).join(', '),
+    description: spot.note,
+    latitude: spot.lat,
+    longitude: spot.lng,
+    category: spot.category,
+    outdoor: spot.outdoor,
+  });
 }
 
 /* ---------- Lịch trình mẫu ---------- */
@@ -503,7 +534,7 @@ async function renderMap(d) {
 function renderCosts(d) {
   if (!d.costs.length) return;
   const days = d.suggestedDays || 3;
-  $('dd-costs-title').textContent = `Chi phí tham khảo ${durationLabel(days)}`;
+  $('dd-costs-title').textContent = `Chi phí tham khảo ${d.costTrip || durationLabel(days)}`;
   let total = 0;
   $('dd-costs-body').innerHTML = d.costs
     .map((c) => {

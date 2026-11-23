@@ -80,7 +80,7 @@ function openPicker(spot, trips) {
         : `<div class="field">
              <label for="add-trip-trip">Chuyến đi</label>
              <select class="input" id="add-trip-trip">
-               ${trips.map((t) => `<option value="${t.id}">${escapeHtml(t.name)} · ${escapeHtml(t.status.label)}</option>`).join('')}
+               ${trips.map((t) => `<option value="${t.id}">${escapeHtml(t.title || t.name)} · ${escapeHtml(t.status.label)}</option>`).join('')}
              </select>
            </div>
            <div class="field">
