@@ -89,6 +89,7 @@ const SORTERS = {
  * - seasonal (BR 28): 3 điểm đến có tháng hiện tại hoặc tháng sau nằm trong [Tháng đẹp].
  */
 export async function listDestinations({ page, size, q, region, type, sort }) {
+  const month = currentMonthVN();
   const cacheKey = JSON.stringify({ month, page, size, q, region, type, sort });
   const cached = catalogCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) return cached.data;
@@ -113,7 +114,6 @@ export async function listDestinations({ page, size, q, region, type, sort }) {
     },
   });
 
-  const month = currentMonthVN();
   const keyword = q ? toSlug(q) : '';
   const cards = rows.map((d) => toCard(d, month));
 
