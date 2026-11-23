@@ -9,8 +9,8 @@ import devRoutes from './dev.routes.js';
 import weatherRoutes from './weather.routes.js';
 import itineraryRoutes from './itinerary.routes.js';
 import publicItineraryRoutes from './publicItineraries.routes.js';
+import destinationCatalogRoutes from './destinationCatalog.routes.js';
 import publicRoutes from './public.routes.js';
-import passwordResetRoutes from './passwordReset.routes.js';
 import savedRoutes from './saved.routes.js';
 import expenseRoutes from './expense.routes.js';
 
@@ -18,7 +18,6 @@ const router = Router();
 
 router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
-router.use('/auth', passwordResetRoutes);
 router.use('/trips/:id/cover', tripCoverRoutes);
 router.use('/trips', tripRoutes);
 
@@ -27,6 +26,7 @@ router.use('/trips', tripRoutes);
 router.use('/public/weather', weatherRoutes);
 router.use('/', itineraryRoutes);
 router.use('/public/itineraries', publicItineraryRoutes);
+router.use('/public/destinations', destinationCatalogRoutes);
 router.use('/public', publicRoutes);
 router.use('/me/saved', savedRoutes);
 router.use('/', expenseRoutes);

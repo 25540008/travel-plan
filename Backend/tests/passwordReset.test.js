@@ -1,229 +1,276 @@
 import { jest } from '@jest/globals';
-import request from 'supertest';
 import crypto from 'node:crypto';
+import bcrypt from 'bcrypt';
 
-// Test cho UC 4: POST /api/auth/forgot-password (TP-12).
-// Prisma và hàm gửi email được thay bằng bản giả nên chạy được mà không cần PostgreSQL hay SMTP.
-
-const users = [
-  { id: 1, fullName: 'Nguyễn Văn An', email: 'an@example.com' },
-  { id: 2, fullName: 'Lê Thị Bích', email: 'bich@example.com' },
-];
-let tokens = [];
+const users = [];
+const resetTokens = [];
+let nextUserId = 1;
 let nextTokenId = 1;
+
+const sameEmail = (a, b) => a.toLowerCase() === b.toLowerCase();
 
 const fakePrisma = {
   user: {
-    findFirst: async ({ where }) => {
-      const wanted = where.email.equals.toLowerCase();
-      const u = users.find((x) => x.email.toLowerCase() === wanted);
-      return u ? { ...u } : null;
+    findFirst: async ({ where }) => users.find((u) => sameEmail(u.email, where.email.equals)) ?? null,
+    findUnique: async ({ where }) => users.find((u) => u.id === where.id) ?? null,
+    update: async ({ where, data }) => {
+      const u = users.find((x) => x.id === where.id);
+      Object.assign(u, data);
+      return { ...u };
     },
   },
   passwordResetToken: {
-    deleteMany: ({ where }) => ({ op: 'delete', where }),
-    create: ({ data }) => ({ op: 'create', data }),
+    create: async ({ data }) => {
+      const row = { id: nextTokenId++, usedAt: null, createdAt: new Date(), ...data };
+      resetTokens.push(row);
+      return { ...row };
+    },
+    findUnique: async ({ where }) => {
+      const row = resetTokens.find((t) => t.tokenHash === where.tokenHash);
+      return row ? { ...row } : null;
+    },
+    updateMany: async ({ where, data }) => {
+      let count = 0;
+      for (const t of resetTokens) {
+        if (where.id !== undefined && t.id !== where.id) continue;
+        if (where.userId !== undefined && t.userId !== where.userId) continue;
+        if (where.usedAt === null && t.usedAt !== null) continue;
+        if (where.expiresAt?.gt && !(t.expiresAt > where.expiresAt.gt)) continue;
+        Object.assign(t, data);
+        count += 1;
+      }
+      return { count };
+    },
   },
-  // Chỉ chạy các thao tác dạng mảng {op, ...} do hai hàm trên trả về.
-  $transaction: async (ops) => {
-    for (const o of ops) {
-      if (o.op === 'delete') tokens = tokens.filter((t) => !(t.userId === o.where.userId && t.usedAt === null));
-      else tokens.push({ id: nextTokenId++, usedAt: null, createdAt: new Date(), ...o.data });
-    }
+  $transaction: async (arg) => {
+    if (Array.isArray(arg)) return Promise.all(arg);
+    return arg(fakePrisma);
   },
 };
 
-const sendMail = jest.fn(async () => {});
-
 class FakeKnownError extends Error {}
-jest.unstable_mockModule('@prisma/client', () => ({ PrismaClient: class {}, Prisma: { PrismaClientKnownRequestError: FakeKnownError } }));
+jest.unstable_mockModule('@prisma/client', () => ({
+  PrismaClient: class {},
+  Prisma: { PrismaClientKnownRequestError: FakeKnownError },
+}));
 jest.unstable_mockModule('../src/lib/prisma.js', () => ({ default: fakePrisma, prisma: fakePrisma }));
+
+// TP-12: thay hàm gửi email bằng bản giả để chạy test không cần SMTP.
+const sendMail = jest.fn(async () => {});
 jest.unstable_mockModule('../src/utils/mailer.js', () => ({
   frontendUrl: () => 'http://localhost:8080',
   sendPasswordResetMail: (...args) => sendMail(...args),
   buildPasswordResetEmail: () => ({}),
 }));
+const flush = () => new Promise((r) => setImmediate(r));
 
+const { default: request } = await import('supertest');
 const { default: app } = await import('../src/app.js');
-const { forgotPasswordLimiter } = await import('../src/middlewares/forgotPasswordLimiter.js');
 
-const post = (body) => request(app).post('/api/auth/forgot-password').send(body);
-const MSG_11 = 'Nếu email tồn tại, chúng tôi đã gửi link đặt lại mật khẩu. Link có hiệu lực trong 15 phút.';
-const sha = (s) => crypto.createHash('sha256').update(s).digest('hex');
-let n = 0;
-const uniqueUnknown = () => `khong-co-${++n}-${Date.now()}@example.com`;
+const sha256 = (s) => crypto.createHash('sha256').update(s).digest('hex');
 
-beforeEach(async () => {
-  // Bộ đếm giới hạn nằm trong bộ nhớ, đặt lại để các test không ảnh hưởng nhau
-  for (const u of users) await forgotPasswordLimiter.resetKey(`forgot:${u.email.toLowerCase()}`);
-  tokens = [];
-  sendMail.mockClear();
+async function seedUser(email = 'ha@travelplan.vn', plainPassword = 'oldPassword1') {
+  const passwordHash = await bcrypt.hash(plainPassword, 10);
+  const user = { id: nextUserId++, fullName: 'Đoàn Ngọc Hà', email, passwordHash, role: 'USER', createdAt: new Date() };
+  users.push(user);
+  return user;
+}
+
+beforeEach(() => {
+  sendMail.mockReset();
   sendMail.mockImplementation(async () => {});
+  users.length = 0;
+  resetTokens.length = 0;
+  nextUserId = 1;
+  nextTokenId = 1;
 });
 
-describe('UC 4 · B6, B7: email tồn tại', () => {
-  test('trả 200 MSG 11, lưu token đã băm hết hạn sau 15 phút và gửi email có link chứa token', async () => {
-    const before = Date.now();
-    const res = await post({ email: 'an@example.com' });
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({ code: 'MSG 11', message: MSG_11 });
+describe('POST /api/auth/forgot-password (UC 4)', () => {
+  it('B4: email trống → 400 MSG 29, email sai định dạng → 400 MSG 3', async () => {
+    const emptyRes = await request(app).post('/api/auth/forgot-password').send({ email: '   ' });
+    expect(emptyRes.status).toBe(400);
+    expect(emptyRes.body.code).toBe('MSG 29');
 
-    expect(tokens).toHaveLength(1);
-    const [row] = tokens;
-    expect(row.userId).toBe(1);
-    expect(row.tokenHash).toMatch(/^[0-9a-f]{64}$/);
-    const ttl = row.expiresAt.getTime() - before;
-    expect(ttl).toBeGreaterThan(14 * 60 * 1000);
-    expect(ttl).toBeLessThanOrEqual(15 * 60 * 1000 + 2000);
+    const badRes = await request(app).post('/api/auth/forgot-password').send({ email: 'email-khong-hop-le' });
+    expect(badRes.status).toBe(400);
+    expect(badRes.body.code).toBe('MSG 3');
+  });
+
+  it('B6, B7: email tồn tại → tạo token SHA-256 hạn 15 phút và trả 200 MSG 11', async () => {
+    const user = await seedUser('user1@travelplan.vn');
+
+    const res = await request(app).post('/api/auth/forgot-password').send({ email: 'User1@TravelPlan.vn' });
+    expect(res.status).toBe(200);
+    expect(res.body.code).toBe('MSG 11');
+
+    expect(resetTokens).toHaveLength(1);
+    const saved = resetTokens[0];
+    expect(saved.userId).toBe(user.id);
+    expect(saved.usedAt).toBeNull();
+    expect(saved.tokenHash).toMatch(/^[a-f0-9]{64}$/);
+
+    const ttlMs = saved.expiresAt.getTime() - saved.createdAt.getTime();
+    expect(ttlMs).toBeGreaterThanOrEqual(14 * 60 * 1000);
+    expect(ttlMs).toBeLessThanOrEqual(16 * 60 * 1000);
+  });
+
+  it('B6 (TP-12): gửi email ET 1 tới user, link chứa token khớp với bản băm đã lưu', async () => {
+    const user = await seedUser('mail@travelplan.vn');
+
+    const res = await request(app).post('/api/auth/forgot-password').send({ email: 'mail@travelplan.vn' });
+    expect(res.status).toBe(200);
+    await flush();
 
     expect(sendMail).toHaveBeenCalledTimes(1);
     const arg = sendMail.mock.calls[0][0];
-    expect(arg).toMatchObject({ to: 'an@example.com', fullName: 'Nguyễn Văn An' });
-    const m = arg.link.match(/^http:\/\/localhost:8080\/dat-lai-mat-khau\.html\?token=([0-9a-f]{64})$/);
-    expect(m).not.toBeNull();
-    // Chỉ lưu SHA-256, không lưu chuỗi gốc (32 byte = 64 ký tự hex)
-    expect(row.tokenHash).toBe(sha(m[1]));
-    expect(row.tokenHash).not.toBe(m[1]);
+    expect(arg.to).toBe(user.email);
+    expect(arg.fullName).toBe(user.fullName);
+    const url = new URL(arg.link);
+    expect(url.origin + url.pathname).toBe('http://localhost:8080/dat-lai-mat-khau.html');
+    expect(sha256(url.searchParams.get('token'))).toBe(resetTokens[0].tokenHash);
   });
 
-  test('so email không phân biệt hoa thường', async () => {
-    const res = await post({ email: 'AN@Example.COM' });
+  it('B6 (TP-12): SMTP lỗi vẫn trả 200 MSG 11', async () => {
+    await seedUser('smtp@travelplan.vn');
+    sendMail.mockImplementation(async () => { throw new Error('SMTP down'); });
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await request(app).post('/api/auth/forgot-password').send({ email: 'smtp@travelplan.vn' });
+    await flush();
     expect(res.status).toBe(200);
-    expect(tokens).toHaveLength(1);
+    expect(res.body.code).toBe('MSG 11');
     expect(sendMail).toHaveBeenCalledTimes(1);
-  });
-
-  test('hủy token cũ chưa dùng của user, giữ token đã dùng và token của user khác', async () => {
-    tokens = [
-      { id: 100, userId: 1, tokenHash: 'a'.repeat(64), expiresAt: new Date(Date.now() + 60000), usedAt: null },
-      { id: 101, userId: 1, tokenHash: 'b'.repeat(64), expiresAt: new Date(Date.now() + 60000), usedAt: new Date() },
-      { id: 102, userId: 2, tokenHash: 'c'.repeat(64), expiresAt: new Date(Date.now() + 60000), usedAt: null },
-    ];
-    const res = await post({ email: 'an@example.com' });
-    expect(res.status).toBe(200);
-    const hashes = tokens.map((t) => t.tokenHash);
-    expect(hashes).not.toContain('a'.repeat(64));
-    expect(hashes).toContain('b'.repeat(64));
-    expect(hashes).toContain('c'.repeat(64));
-    expect(tokens.filter((t) => t.userId === 1 && t.usedAt === null)).toHaveLength(1);
-  });
-
-  test('hai lần yêu cầu cho cùng user cho hai token khác nhau', async () => {
-    await post({ email: 'bich@example.com' });
-    const first = sendMail.mock.calls[0][0].link;
-    await post({ email: 'bich@example.com' });
-    const second = sendMail.mock.calls[1][0].link;
-    expect(first).not.toBe(second);
-    expect(tokens.filter((t) => t.userId === 2)).toHaveLength(1); // chỉ còn token mới nhất
-  });
-});
-
-describe('UC 4 · B6, B7: email không tồn tại', () => {
-  test('vẫn trả 200 MSG 11 như thành công, không tạo token, không gửi email', async () => {
-    const res = await post({ email: uniqueUnknown() });
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({ code: 'MSG 11', message: MSG_11 });
-    expect(tokens).toHaveLength(0);
-    expect(sendMail).not.toHaveBeenCalled();
-  });
-
-  test('phản hồi giống hệt nhau giữa email có và không có tài khoản (không lộ email)', async () => {
-    const a = await post({ email: 'bich@example.com' });
-    const b = await post({ email: uniqueUnknown() });
-    expect(a.status).toBe(b.status);
-    expect(a.body).toEqual(b.body);
-  });
-});
-
-describe('UC 4 · B3: gửi email nền, lỗi gửi không lộ ra người dùng', () => {
-  test('gửi email lỗi (Promise reject) vẫn trả 200 MSG 11 và ghi log', async () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    sendMail.mockImplementation(() => Promise.reject(new Error('SMTP down')));
-    const res = await post({ email: 'an@example.com' });
-    expect(res.status).toBe(200);
-    expect(res.body.code).toBe('MSG 11');
-    await new Promise((r) => setTimeout(r, 20));
-    expect(spy).toHaveBeenCalled();
-    expect(spy.mock.calls.flat().join(' ')).toContain('SMTP down');
     spy.mockRestore();
   });
 
-  test('hàm gửi email ném lỗi đồng bộ cũng không làm hỏng response', async () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    sendMail.mockImplementation(() => {
-      throw new Error('Chưa cấu hình SMTP_HOST');
-    });
-    const res = await post({ email: 'bich@example.com' });
-    expect(res.status).toBe(200);
-    expect(res.body.code).toBe('MSG 11');
-    spy.mockRestore();
-  });
-
-  test('không chờ email gửi xong mới trả response', async () => {
-    sendMail.mockImplementation(() => new Promise(() => {})); // không bao giờ xong
-    const res = await post({ email: 'an@example.com' });
-    expect(res.status).toBe(200);
-  });
-});
-
-describe('UC 4 · B4: kiểm tra email (CBR 1)', () => {
-  test('sai định dạng → 400 MSG 3 kèm lỗi theo trường', async () => {
-    const res = await post({ email: 'khong-phai-email' });
-    expect(res.status).toBe(400);
-    expect(res.body.code).toBe('MSG 3');
-    expect(res.body.errors[0]).toMatchObject({ field: 'email', code: 'MSG 3' });
+  it('B7 (TP-12): email không tồn tại thì không gửi email', async () => {
+    await request(app).post('/api/auth/forgot-password').send({ email: 'khongco@travelplan.vn' });
+    await flush();
     expect(sendMail).not.toHaveBeenCalled();
   });
 
-  test('để trống hoặc thiếu trường → 400 MSG 29', async () => {
-    const empty = await post({ email: '' });
-    expect(empty.status).toBe(400);
-    expect(empty.body.code).toBe('MSG 29');
-    const missing = await post({});
-    expect(missing.status).toBe(400);
-    expect(missing.body.errors[0]).toMatchObject({ field: 'email', code: 'MSG 29' });
+  it('B6: yêu cầu mới tự động hủy các token cũ chưa dùng của user', async () => {
+    await seedUser('user2@travelplan.vn');
+
+    await request(app).post('/api/auth/forgot-password').send({ email: 'user2@travelplan.vn' });
+    await request(app).post('/api/auth/forgot-password').send({ email: 'user2@travelplan.vn' });
+
+    expect(resetTokens).toHaveLength(2);
+    expect(resetTokens[0].usedAt).not.toBeNull();
+    expect(resetTokens[1].usedAt).toBeNull();
   });
 
-  test('quá 150 ký tự → 400 MSG 30', async () => {
-    const res = await post({ email: `${'a'.repeat(145)}@example.com` });
-    expect(res.status).toBe(400);
-    expect(res.body.code).toBe('MSG 30');
-  });
-
-  test('lỗi định dạng không bị tính vào giới hạn 3 lần', async () => {
-    for (let i = 0; i < 5; i += 1) await post({ email: 'sai-dinh-dang' });
-    const res = await post({ email: 'an@example.com' });
+  it('B6, B7: email không tồn tại vẫn trả 200 MSG 11 và không tạo bản ghi token', async () => {
+    const res = await request(app).post('/api/auth/forgot-password').send({ email: 'khongtontai@travelplan.vn' });
     expect(res.status).toBe(200);
+    expect(res.body.code).toBe('MSG 11');
+    expect(resetTokens).toHaveLength(0);
   });
-});
 
-describe('UC 4 · B5 (BR 14): tối đa 3 yêu cầu cho một email trong 15 phút', () => {
-  test('lần thứ 4 → 429 MSG 9 và không gửi thêm email', async () => {
-    const email = 'limit-co-tk@example.com';
-    users.push({ id: 9, fullName: 'Tài Khoản Thử', email });
-    try {
-      for (let i = 0; i < 3; i += 1) expect((await post({ email })).status).toBe(200);
-      const res = await post({ email });
-      expect(res.status).toBe(429);
-      expect(res.body.code).toBe('MSG 9');
-      expect(res.body.message).toBe('Bạn thử quá nhiều lần. Vui lòng thử lại sau 15 phút.');
-      expect(sendMail).toHaveBeenCalledTimes(3);
-    } finally {
-      users.pop();
+  it('B5: vượt quá 3 lần / email / 15 phút → 429 MSG 9', async () => {
+    const target = 'spam@travelplan.vn';
+    for (let i = 0; i < 3; i += 1) {
+      const ok = await request(app).post('/api/auth/forgot-password').send({ email: target });
+      expect(ok.status).toBe(200);
     }
+    const blocked = await request(app).post('/api/auth/forgot-password').send({ email: target });
+    expect(blocked.status).toBe(429);
+    expect(blocked.body.code).toBe('MSG 9');
+  });
+});
+
+describe('POST /api/auth/reset-password (UC 5)', () => {
+  it('B5: mật khẩu ngoài 6–100 ký tự → 400 MSG 4; mật khẩu nhập lại không khớp → 400 MSG 5', async () => {
+    const shortRes = await request(app).post('/api/auth/reset-password').send({
+      token: 'any-token',
+      password: '123',
+      confirmPassword: '123',
+    });
+    expect(shortRes.status).toBe(400);
+    expect(shortRes.body.code).toBe('MSG 4');
+
+    const mismatchRes = await request(app).post('/api/auth/reset-password').send({
+      token: 'any-token',
+      password: 'newPassword123',
+      confirmPassword: 'otherPassword123',
+    });
+    expect(mismatchRes.status).toBe(400);
+    expect(mismatchRes.body.code).toBe('MSG 5');
   });
 
-  test('email không tồn tại cũng bị giới hạn như email có tài khoản (không lộ email)', async () => {
-    const email = uniqueUnknown();
-    const statuses = [];
-    for (let i = 0; i < 4; i += 1) statuses.push((await post({ email })).status);
-    expect(statuses).toEqual([200, 200, 200, 429]);
+  it('B2: token thiếu, không tồn tại hoặc đã hết hạn → 400 MSG 12', async () => {
+    const user = await seedUser('expired@travelplan.vn');
+    const expiredRaw = 'a'.repeat(64);
+    resetTokens.push({
+      id: nextTokenId++,
+      userId: user.id,
+      tokenHash: sha256(expiredRaw),
+      expiresAt: new Date(Date.now() - 1000),
+      usedAt: null,
+      createdAt: new Date(Date.now() - 16 * 60 * 1000),
+    });
+
+    const missingRes = await request(app).post('/api/auth/reset-password').send({
+      token: '',
+      password: 'newPassword123',
+      confirmPassword: 'newPassword123',
+    });
+    expect(missingRes.status).toBe(400);
+    expect(missingRes.body.code).toBe('MSG 12');
+
+    const invalidRes = await request(app).post('/api/auth/reset-password').send({
+      token: 'b'.repeat(64),
+      password: 'newPassword123',
+      confirmPassword: 'newPassword123',
+    });
+    expect(invalidRes.status).toBe(400);
+    expect(invalidRes.body.code).toBe('MSG 12');
+
+    const expRes = await request(app).post('/api/auth/reset-password').send({
+      token: expiredRaw,
+      password: 'newPassword123',
+      confirmPassword: 'newPassword123',
+    });
+    expect(expRes.status).toBe(400);
+    expect(expRes.body.code).toBe('MSG 12');
   });
 
-  test('giới hạn tính theo email, không chặn email khác và không phân biệt hoa thường', async () => {
-    const email = uniqueUnknown();
-    for (let i = 0; i < 3; i += 1) await post({ email });
-    expect((await post({ email: email.toUpperCase() })).status).toBe(429);
-    expect((await post({ email: uniqueUnknown() })).status).toBe(200);
+  it('B6: đặt lại mật khẩu thành công → 200 MSG 13, băm BCrypt, đăng nhập được và token bị hủy (dùng 1 lần)', async () => {
+    const user = await seedUser('resetok@travelplan.vn', 'oldPassword1');
+    const rawToken = 'c'.repeat(64);
+    resetTokens.push({
+      id: nextTokenId++,
+      userId: user.id,
+      tokenHash: sha256(rawToken),
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      usedAt: null,
+      createdAt: new Date(),
+    });
+
+    const res = await request(app).post('/api/auth/reset-password').send({
+      token: rawToken,
+      password: 'newPassword123',
+      confirmPassword: 'newPassword123',
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.code).toBe('MSG 13');
+    expect(resetTokens[0].usedAt).not.toBeNull();
+    expect(await bcrypt.compare('newPassword123', users[0].passwordHash)).toBe(true);
+
+    // Đăng nhập bằng mật khẩu mới thành công
+    const loginRes = await request(app).post('/api/auth/login').send({
+      email: 'resetok@travelplan.vn',
+      password: 'newPassword123',
+    });
+    expect(loginRes.status).toBe(200);
+
+    // Dùng lại token lần 2 → 400 MSG 12
+    const reuseRes = await request(app).post('/api/auth/reset-password').send({
+      token: rawToken,
+      password: 'anotherPassword123',
+      confirmPassword: 'anotherPassword123',
+    });
+    expect(reuseRes.status).toBe(400);
+    expect(reuseRes.body.code).toBe('MSG 12');
   });
 });

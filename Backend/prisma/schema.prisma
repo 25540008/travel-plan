@@ -50,8 +50,55 @@ model Destination {
   isFeatured  Boolean  @default(true) @map("is_featured")
   createdAt   DateTime @default(now()) @map("created_at")
   trips       Trip[]
+  // UC 8, UC 9: thông tin chi tiết. region: NORTH | CENTRAL | HIGHLANDS | SOUTH; category: BEACH | MOUNTAIN | CULTURE.
+  slug            String?  @unique @db.VarChar(160)
+  province        String?  @db.VarChar(100)
+  region          String?  @db.VarChar(20)
+  category        String?  @db.VarChar(20)
+  bestMonths      Int[]    @default([]) @map("best_months")
+  specialMonths   Int[]    @default([]) @map("special_months")
+  specialNote     String?  @map("special_note") @db.VarChar(150)
+  avgTempByMonth  Int[]    @default([]) @map("avg_temp_by_month")
+  tags            String[] @default([])
+  travelFromHcm   String?  @map("travel_from_hcm") @db.VarChar(100)
+  suggestedDays   String?  @map("suggested_days") @db.VarChar(50)
+  costSource      String?  @map("cost_source") @db.VarChar(255)
+  spots           DestinationSpot[]
+  costs           DestinationCost[]
 
   @@map("destinations")
+}
+
+// Địa điểm nên ghé của một điểm đến. category: SIGHTSEEING | FOOD | CULTURE | TREKKING.
+model DestinationSpot {
+  id            Int         @id @default(autoincrement())
+  destinationId Int         @map("destination_id")
+  name          String      @db.VarChar(150)
+  category      String      @db.VarChar(20)
+  description   String?     @db.VarChar(500)
+  imageUrl      String?     @map("image_url") @db.VarChar(500)
+  latitude      Decimal?    @db.Decimal(10, 7)
+  longitude     Decimal?    @db.Decimal(10, 7)
+  sortOrder     Int         @default(0) @map("sort_order")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@index([destinationId])
+  @@map("destination_spots")
+}
+
+// Chi phí tham khảo 3N2Đ cho một người. category: TRANSPORT | LODGING | FOOD | TICKETS.
+model DestinationCost {
+  id            Int         @id @default(autoincrement())
+  destinationId Int         @map("destination_id")
+  category      String      @db.VarChar(20)
+  amount        Decimal     @db.Decimal(15, 2)
+  note          String?     @db.VarChar(255)
+  sortOrder     Int         @default(0) @map("sort_order")
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@index([destinationId])
+  @@map("destination_costs")
 }
 
 model Trip {
@@ -147,7 +194,8 @@ model PasswordResetToken {
   expiresAt DateTime  @map("expires_at")
   usedAt    DateTime? @map("used_at")
   createdAt DateTime  @default(now()) @map("created_at")
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("password_reset_tokens")

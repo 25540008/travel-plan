@@ -1,4 +1,3 @@
--- UC 4: token đặt lại mật khẩu (chỉ lưu SHA-256, hiệu lực 15 phút, dùng một lần)
 CREATE TABLE "password_reset_tokens" (
     "id" SERIAL NOT NULL,
     "user_id" INTEGER NOT NULL,

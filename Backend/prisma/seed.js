@@ -2,6 +2,7 @@
 import 'dotenv/config';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
+import { seedDestinationDetails } from './destinationData.js';
 
 const prisma = new PrismaClient();
 
@@ -52,6 +53,7 @@ async function main() {
     if (existing) await prisma.destination.update({ where: { id: existing.id }, data: d });
     else await prisma.destination.create({ data: d });
   }
+  await seedDestinationDetails(prisma); // UC 8, UC 9: slug, vùng, tháng đẹp, địa điểm nên ghé, chi phí
 
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
   const user = await prisma.user.upsert({
