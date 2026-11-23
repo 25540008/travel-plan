@@ -14,3 +14,12 @@ export async function login(req, res) {
 export async function me(req, res) {
   res.json(await authService.getMe(req.user.id));
 }
+
+export async function forgotPassword(req, res) {
+  res.json(await authService.forgotPassword(req.valid.body.email));
+}
+
+export async function resetPassword(req, res) {
+  const { token, password } = req.valid.body;
+  res.json(await authService.resetPassword({ token, password }));
+}

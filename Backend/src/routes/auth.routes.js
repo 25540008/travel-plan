@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { auth } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
-import { loginLimiter } from '../middlewares/rateLimit.js';
+import { loginLimiter, forgotPasswordLimiter } from '../middlewares/rateLimit.js';
 import { requiredText, email } from '../utils/validators.js';
 import * as controller from '../controllers/auth.controller.js';
 
@@ -48,8 +48,33 @@ const loginSchema = z.object({
     .min(1, m('MSG 2', 'Vui lòng nhập mật khẩu.')),
 });
 
+const forgotPasswordSchema = z.object({
+  email: email('Email').transform(lower),
+});
+
+const resetPasswordSchema = z
+  .object({
+    token: z
+      .string({ error: m('MSG 12', 'Link đặt lại mật khẩu đã hết hạn hoặc đã được dùng.') })
+      .trim()
+      .min(1, m('MSG 12', 'Link đặt lại mật khẩu đã hết hạn hoặc đã được dùng.')),
+    password: passwordField,
+    confirmPassword: z.string({ error: m('MSG 29', 'Vui lòng nhập lại mật khẩu.') }),
+  })
+  .refine((v) => v.password === v.confirmPassword, {
+    path: ['confirmPassword'],
+    error: m('MSG 5', 'Mật khẩu nhập lại không khớp.'),
+    when: ({ value, issues }) =>
+      typeof value?.password === 'string' &&
+      typeof value?.confirmPassword === 'string' &&
+      !issues.some((i) => i.path[0] === 'confirmPassword'),
+  });
+
 router.post('/register', validate({ body: registerSchema }), controller.register);
 router.post('/login', validate({ body: loginSchema }), loginLimiter, controller.login);
 router.get('/me', auth, controller.me);
+router.post('/forgot-password', validate({ body: forgotPasswordSchema }), forgotPasswordLimiter, controller.forgotPassword);
+router.post('/reset-password', validate({ body: resetPasswordSchema }), controller.resetPassword);
+
 
 export default router;
