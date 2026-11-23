@@ -87,6 +87,10 @@ const SORTERS = {
  * - seasonal (BR 28): 3 điểm đến có tháng hiện tại hoặc tháng sau nằm trong [Tháng đẹp].
  */
 export async function listDestinations({ page, size, q, region, type, sort }) {
+  const cacheKey = JSON.stringify({ month, page, size, q, region, type, sort });
+  const cached = catalogCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.data;
+  
   const rows = await prisma.destination.findMany({
     select: {
       id: true,
@@ -127,7 +131,7 @@ export async function listDestinations({ page, size, q, region, type, sort }) {
     .sort((a, b) => Number(b.inSeason) - Number(a.inSeason) || POPULAR(a, b))
     .slice(0, SEASON_PICKS);
 
-  return {
+  const resutl = {
     items: all.slice((page - 1) * size, page * size),
     page,
     size,
@@ -136,6 +140,8 @@ export async function listDestinations({ page, size, q, region, type, sort }) {
     regionCounts,
     seasonal: { months: [month, next], title: `Tháng ${month}, ${next} nên đi đâu?`, items: seasonal },
   };
+  catalogCache.set(cacheKey, { data: result, expiresAt: Date.now() + CACHE_TTL_MS });
+  return result;  
 }
 
 const shortName = (full = '') => full.trim().split(/\s+/).slice(-2).join(' ');
