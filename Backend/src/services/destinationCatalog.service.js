@@ -15,6 +15,8 @@ const SAMPLE_ITINERARIES = 3; // BR 32: 3 lịch trình mẫu
 const NEARBY = 3; // BR 32: 3 điểm đến gần đó
 const NEARBY_SPEED_KMH = 45; // ước tính thời gian đi giữa hai điểm đến
 const DAY_MS = 24 * 60 * 60 * 1000;
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const catalogCache = new Map();
 
 const num = (v) => (v == null ? null : Number(v));
 
