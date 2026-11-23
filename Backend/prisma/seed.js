@@ -21,6 +21,10 @@ const destinations = [
   { name: 'Mộc Châu', address: 'Sơn La, Việt Nam', latitude: 20.8443487, longitude: 104.6391408, description: 'Đồi chè xanh mướt và mùa hoa mận' },
   { name: 'Vũng Tàu', address: 'Bà Rịa - Vũng Tàu, Việt Nam', latitude: 10.3459613, longitude: 107.0842819, description: 'Biển gần Sài Gòn, hải sản tươi' },
   { name: 'Hạ Long', address: 'Quảng Ninh, Việt Nam', latitude: 20.9500739, longitude: 107.0733681, description: 'Vịnh di sản với hàng nghìn đảo đá vôi' },
+  // TP-42: thêm 3 điểm đến
+  { name: 'Đà Nẵng', address: 'Đà Nẵng, Việt Nam', latitude: 16.0544068, longitude: 108.2021667, description: 'Thành phố biển năng động với bãi biển Mỹ Khê và bán đảo Sơn Trà' },
+  { name: 'Nha Trang', address: 'Khánh Hòa, Việt Nam', latitude: 12.2387911, longitude: 109.1967488, description: 'Vịnh biển xanh nắng ấm quanh năm' },
+  { name: 'Huế', address: 'Thừa Thiên Huế, Việt Nam', latitude: 16.463713, longitude: 107.590866, description: 'Cố đô di sản trầm mặc bên dòng sông Hương' },
 ];
 
 const day = (d) => new Date(`2026-10-${d}T00:00:00Z`);

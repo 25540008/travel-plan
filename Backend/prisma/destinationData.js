@@ -148,6 +148,43 @@ export const destinationDetails = [
       spot('Rừng thông Bản Áng', 'TREKKING', 'Rừng thông và hồ nước, hợp dã ngoại.', 20.8010, 104.7020),
     ],
   },
+  // TP-42: Đà Nẵng, Nha Trang, Huế. Chi phí lấy trung bình khoảng min–max của TP-42.
+  {
+    name: 'Đà Nẵng', slug: 'da-nang', province: 'Đà Nẵng', region: 'CENTRAL', category: 'BEACH',
+    bestMonths: [2, 3, 4, 5, 6, 7, 8], specialMonths: [], specialNote: null,
+    avgTempByMonth: [22, 23, 25, 27, 29, 30, 30, 29, 28, 26, 24, 22],
+    tags: ['Biển', 'Ẩm thực', 'Nhóm bạn'], travelFromHcm: '1 giờ 20 bay thẳng', suggestedDays: '3 ngày',
+    costs: costs(1900000, 1150000, 950000, 600000),
+    spots: [
+      spot('Bãi biển Mỹ Khê', 'SIGHTSEEING', 'Tắm biển và đón bình minh.', 16.0592, 108.2476),
+      spot('Bán đảo Sơn Trà & Chùa Linh Ứng', 'CULTURE', 'Toàn cảnh vịnh Đà Nẵng.', 16.1003, 108.2775),
+      spot('Chợ Cồn Đà Nẵng', 'FOOD', 'Thiên đường ăn vặt miền Trung.', 16.0682, 108.2144),
+    ],
+  },
+  {
+    name: 'Nha Trang', slug: 'nha-trang', province: 'Khánh Hòa', region: 'CENTRAL', category: 'BEACH',
+    bestMonths: [1, 2, 3, 4, 5, 6, 7, 8], specialMonths: [], specialNote: null,
+    avgTempByMonth: [24, 25, 26, 28, 29, 29, 29, 29, 28, 27, 26, 25],
+    tags: ['Biển', 'Ẩm thực'], travelFromHcm: '5 giờ cao tốc hoặc 1 giờ bay', suggestedDays: '3 ngày',
+    costs: costs(725000, 1150000, 900000, 700000),
+    spots: [
+      spot('Đảo Hòn Mun', 'SIGHTSEEING', 'Lặn ngắm san hô.', 12.1691, 109.3039),
+      spot('Tháp Bà Ponagar', 'CULTURE', 'Kiến trúc Chăm Pa cổ kính.', 12.2654, 109.1954),
+      spot('Nem nướng Ninh Hòa', 'FOOD', 'Đặc sản trứ danh Nha Trang.', 12.2481, 109.1912),
+    ],
+  },
+  {
+    name: 'Huế', slug: 'hue', province: 'Thừa Thiên Huế', region: 'CENTRAL', category: 'CULTURE',
+    bestMonths: [1, 2, 3, 4, 5, 6, 7, 8], specialMonths: [], specialNote: null,
+    avgTempByMonth: [20, 21, 24, 27, 29, 30, 30, 29, 27, 25, 23, 20],
+    tags: ['Cố đô', 'Ẩm thực', 'Tiết kiệm'], travelFromHcm: '1 giờ 25 bay thẳng Phú Bài', suggestedDays: '3 ngày',
+    costs: costs(1750000, 925000, 600000, 485000),
+    spots: [
+      spot('Đại Nội Huế & Chùa Thiên Mụ', 'CULTURE', 'Nên đi buổi sáng sớm.', 16.4698, 107.5784),
+      spot('Đồi Vọng Cảnh & Cầu Trường Tiền', 'SIGHTSEEING', 'Ngắm hoàng hôn sông Hương.', 16.4352, 107.5546),
+      spot('Bún bò Huế & Cơm hến', 'FOOD', 'Ẩm thực cố đô giá mềm.', 16.4754, 107.6033),
+    ],
+  },
 ];
 
 /** Cập nhật điểm đến đã có theo tên (seed.js tạo trước), rồi thay địa điểm nên ghé và chi phí. Tên chưa có thì bỏ qua. */
