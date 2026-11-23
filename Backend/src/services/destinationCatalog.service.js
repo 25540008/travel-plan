@@ -133,7 +133,7 @@ export async function listDestinations({ page, size, q, region, type, sort }) {
     .sort((a, b) => Number(b.inSeason) - Number(a.inSeason) || POPULAR(a, b))
     .slice(0, SEASON_PICKS);
 
-  const resutl = {
+  const result = {
     items: all.slice((page - 1) * size, page * size),
     page,
     size,
