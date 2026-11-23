@@ -186,6 +186,7 @@ model SavedItem {
   @@map("saved_items")
 }
 
+// UC 4: token đặt lại mật khẩu. Chỉ lưu SHA-256 của chuỗi gửi qua email, hiệu lực 15 phút, dùng một lần.
 model PasswordResetToken {
   id        Int       @id @default(autoincrement())
   userId    Int       @map("user_id")

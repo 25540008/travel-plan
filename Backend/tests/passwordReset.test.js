@@ -55,6 +55,15 @@ jest.unstable_mockModule('@prisma/client', () => ({
 }));
 jest.unstable_mockModule('../src/lib/prisma.js', () => ({ default: fakePrisma, prisma: fakePrisma }));
 
+// TP-12: thay hàm gửi email bằng bản giả để chạy test không cần SMTP.
+const sendMail = jest.fn(async () => {});
+jest.unstable_mockModule('../src/utils/mailer.js', () => ({
+  frontendUrl: () => 'http://localhost:8080',
+  sendPasswordResetMail: (...args) => sendMail(...args),
+  buildPasswordResetEmail: () => ({}),
+}));
+const flush = () => new Promise((r) => setImmediate(r));
+
 const { default: request } = await import('supertest');
 const { default: app } = await import('../src/app.js');
 
@@ -68,6 +77,8 @@ async function seedUser(email = 'ha@travelplan.vn', plainPassword = 'oldPassword
 }
 
 beforeEach(() => {
+  sendMail.mockReset();
+  sendMail.mockImplementation(async () => {});
   users.length = 0;
   resetTokens.length = 0;
   nextUserId = 1;
@@ -101,6 +112,41 @@ describe('POST /api/auth/forgot-password (UC 4)', () => {
     const ttlMs = saved.expiresAt.getTime() - saved.createdAt.getTime();
     expect(ttlMs).toBeGreaterThanOrEqual(14 * 60 * 1000);
     expect(ttlMs).toBeLessThanOrEqual(16 * 60 * 1000);
+  });
+
+  it('B6 (TP-12): gửi email ET 1 tới user, link chứa token khớp với bản băm đã lưu', async () => {
+    const user = await seedUser('mail@travelplan.vn');
+
+    const res = await request(app).post('/api/auth/forgot-password').send({ email: 'mail@travelplan.vn' });
+    expect(res.status).toBe(200);
+    await flush();
+
+    expect(sendMail).toHaveBeenCalledTimes(1);
+    const arg = sendMail.mock.calls[0][0];
+    expect(arg.to).toBe(user.email);
+    expect(arg.fullName).toBe(user.fullName);
+    const url = new URL(arg.link);
+    expect(url.origin + url.pathname).toBe('http://localhost:8080/dat-lai-mat-khau.html');
+    expect(sha256(url.searchParams.get('token'))).toBe(resetTokens[0].tokenHash);
+  });
+
+  it('B6 (TP-12): SMTP lỗi vẫn trả 200 MSG 11', async () => {
+    await seedUser('smtp@travelplan.vn');
+    sendMail.mockImplementation(async () => { throw new Error('SMTP down'); });
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await request(app).post('/api/auth/forgot-password').send({ email: 'smtp@travelplan.vn' });
+    await flush();
+    expect(res.status).toBe(200);
+    expect(res.body.code).toBe('MSG 11');
+    expect(sendMail).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
+  });
+
+  it('B7 (TP-12): email không tồn tại thì không gửi email', async () => {
+    await request(app).post('/api/auth/forgot-password').send({ email: 'khongco@travelplan.vn' });
+    await flush();
+    expect(sendMail).not.toHaveBeenCalled();
   });
 
   it('B6: yêu cầu mới tự động hủy các token cũ chưa dùng của user', async () => {
