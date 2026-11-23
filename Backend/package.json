@@ -41,6 +41,7 @@
     "morgan": "^1.12.1",
     "multer": "^2.5.0",
     "node-cache": "^5.1.2",
+    "nodemailer": "^10.6.0",
     "prisma": "^6.19.3",
     "zod": "^4.6.7"
   },

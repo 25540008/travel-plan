@@ -1,11 +1,52 @@
-// Tìm địa điểm và ảnh nền bản đồ dùng chung (Screen 6, Screen 7, Screen 8).
-// Mặc định dùng Nominatim và tile OpenStreetMap theo SRS. Một số mạng / DNS chặn *.openstreetmap.org,
-// khi đó tự chuyển sang Photon (cũng dữ liệu OSM) và tile Esri (không cần API key) để chức năng vẫn chạy.
+// Tìm địa điểm dùng chung (Screen 6, Screen 8).
+// Có GOOGLE_MAPS_API_KEY (config.js) → Google Places API (New), Place.searchByText. Không có key hoặc Google lỗi
+// → Nominatim theo SRS; Nominatim bị chặn (một số mạng / DNS chặn *.openstreetmap.org) → Photon (cũng dữ liệu OSM).
+// Mọi nguồn đều trả cùng dạng Nominatim: { lat, lon, name, display_name, address: { city } }.
+// Ảnh nền bản đồ nằm ở js/maps.js.
+import { loadGoogleMaps } from './maps.js';
 
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
 const PHOTON = 'https://photon.komoot.io/api/';
 
 let nominatimDown = false; // Nominatim lỗi mạng một lần thì dùng Photon cho các lần sau trong trang
+let googleDown = false;
+
+const aborted = () => new DOMException('Đã huỷ', 'AbortError');
+
+/** Kết quả Google Place → dạng Nominatim. Địa điểm là chính một thành phố/tỉnh thì city = tên của nó. */
+function fromGooglePlace(p) {
+  const comps = p.addressComponents || [];
+  const comp = (type) => comps.find((c) => c.types?.includes(type))?.longText;
+  const types = p.types || [];
+  const isCity = types.includes('locality') || types.includes('administrative_area_level_1');
+  const name = p.displayName || '';
+  return {
+    lat: String(p.location.lat()),
+    lon: String(p.location.lng()),
+    name,
+    display_name: p.formattedAddress || name,
+    address: { city: isCity ? name : comp('locality') || comp('administrative_area_level_2') || name },
+  };
+}
+
+/** Google Places Text Search (tối đa 5, ưu tiên Việt Nam và quanh near). Không có key → null. */
+async function searchGoogle(q, { near, signal }) {
+  const gm = await loadGoogleMaps();
+  if (!gm) return null;
+  if (signal?.aborted) throw aborted();
+  const { Place } = gm.places?.Place ? gm.places : await gm.importLibrary('places');
+  const request = {
+    textQuery: q,
+    fields: ['displayName', 'formattedAddress', 'location', 'addressComponents', 'types'],
+    language: 'vi',
+    region: 'vn',
+    maxResultCount: 5,
+  };
+  if (near) request.locationBias = { center: { lat: near.lat, lng: near.lng }, radius: 50000 };
+  const { places = [] } = await Place.searchByText(request);
+  if (signal?.aborted) throw aborted();
+  return places.filter((p) => p.location).map(fromGooglePlace);
+}
 
 /** Kết quả Photon (GeoJSON) → cùng dạng với Nominatim: { lat, lon, name, display_name, address }. */
 function fromPhoton(f) {
@@ -54,6 +95,16 @@ async function searchPhoton(q, { near, signal }) {
  * Trả mảng dạng Nominatim; AbortError được ném lại để nơi gọi bỏ qua.
  */
 export async function searchPlaces(q, { near = null, signal, details = false } = {}) {
+  if (!googleDown) {
+    try {
+      const res = await searchGoogle(q, { near, signal });
+      if (res) return res;
+    } catch (err) {
+      if (err.name === 'AbortError') throw err;
+      googleDown = true; // chưa bật Places API (New), hết hạn mức... → dùng OSM cho các lần sau
+      console.warn('[geo] Google Places lỗi, chuyển sang Nominatim.', err);
+    }
+  }
   if (!nominatimDown) {
     try {
       return await searchNominatim(q, { near, signal, details });
@@ -63,24 +114,4 @@ export async function searchPlaces(q, { near = null, signal, details = false } =
     }
   }
   return searchPhoton(q, { near, signal });
-}
-
-/** Thêm ảnh nền bản đồ OSM; tile lỗi liên tục (mạng chặn) thì đổi sang Esri World Street Map. */
-export function addBaseLayer(map) {
-  const L = window.L;
-  const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' });
-  let errors = 0;
-  let switched = false;
-  osm.on('tileerror', () => {
-    errors += 1;
-    if (switched || errors < 2) return;
-    switched = true;
-    map.removeLayer(osm);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 19,
-      attribution: 'Tiles © Esri',
-    }).addTo(map);
-  });
-  osm.addTo(map);
-  return map;
 }
