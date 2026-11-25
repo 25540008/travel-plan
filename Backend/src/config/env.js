@@ -3,6 +3,15 @@ import path from 'node:path';
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 
+if (nodeEnv === 'production') {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+    throw new Error('JWT_SECRET phải được cấu hình và dài tối thiểu 32 ký tự ở production.');
+  }
+  if (!process.env.CORS_ORIGINS || !process.env.CORS_ORIGINS.trim()) {
+    throw new Error('Thiếu biến môi trường CORS_ORIGINS (domain frontend trên Render).');
+  }
+}
+
 if (nodeEnv === 'production' && !process.env.JWT_SECRET) {
   throw new Error('Thiếu biến môi trường JWT_SECRET');
 }
