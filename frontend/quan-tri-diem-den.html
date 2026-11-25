@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quản trị điểm đến · Travelplan</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/trips.css">
+  <link rel="stylesheet" href="css/trip-form.css">
+  <style>
+    .admin-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    .admin-table-wrap { overflow-x: auto; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: var(--fs-meta); }
+    .admin-table th, .admin-table td { padding: 12px; border-bottom: 1px solid var(--border); text-align: left; }
+    .admin-actions { display: flex; gap: 8px; }
+    .form-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .months-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .month-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; cursor: pointer; font-size: var(--fs-small); }
+    .sub-list { display: grid; gap: 12px; margin-bottom: 12px; }
+    .sub-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) auto; gap: 8px; align-items: end; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-control); }
+    @media (max-width: 768px) { .form-grid-2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body data-page="adminDestinations">
+  <div id="site-header"></div>
+
+  <main class="container section">
+    <!-- B2a: Không có quyền -->
+    <section id="forbidden-box" class="card empty-box" hidden>
+      <h1>403 · Không có quyền truy cập</h1>
+      <p class="meta">Chỉ tài khoản Quản trị nội dung mới có thể truy cập trang này.</p>
+      <a class="btn btn-primary" href="index.html">Về Trang chủ</a>
+    </section>
+
+    <div id="admin-content" hidden>
+      <section id="list-view">
+        <div class="admin-head">
+          <h1>Quản trị điểm đến</h1>
+          <button type="button" class="btn btn-primary" id="btn-add">+ Thêm điểm đến</button>
+        </div>
+        <div class="card admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Tên</th><th>Slug</th><th>Tỉnh</th><th>Vùng</th><th>Tháng đẹp</th><th>Thao tác</th></tr>
+            </thead>
+            <tbody id="dest-tbody"><tr><td colspan="6" class="meta">Đang tải...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <form id="dest-form" hidden novalidate>
+        <div class="trip-form-head">
+          <h1 id="form-title">Thêm điểm đến</h1>
+          <div class="trip-form-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cancel">Hủy</button>
+            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+          </div>
+        </div>
+
+        <div class="trip-form-main">
+          <section class="card form-section">
+            <h2>Thông tin điểm đến</h2>
+            <div class="form-grid-2">
+              <div class="field"><label for="name">Tên điểm đến *</label><input class="input" id="name" name="name" required data-maxlength="150"></div>
+              <div class="field"><label for="slug">Slug *</label><input class="input" id="slug" name="slug" required data-maxlength="160" placeholder="da-lat"></div>
+              <div class="field"><label for="province">Tỉnh / Thành phố *</label><input class="input" id="province" name="province" required data-maxlength="100"></div>
+              <div class="field">
+                <label for="region">Vùng *</label>
+                <select class="input" id="region" name="region" required>
+                  <option value="">-- Chọn vùng --</option>
+                  <option value="NORTH">Miền Bắc</option>
+                  <option value="CENTRAL">Miền Trung</option>
+                  <option value="HIGHLANDS">Tây Nguyên</option>
+                  <option value="SOUTH">Miền Nam</option>
+                </select>
+              </div>
+              <div class="field"><label for="latitude">Vĩ độ *</label><input class="input" id="latitude" name="latitude" type="number" step="any" required></div>
+              <div class="field"><label for="longitude">Kinh độ *</label><input class="input" id="longitude" name="longitude" type="number" step="any" required></div>
+            </div>
+            <div class="field"><label for="imageUrl">Ảnh bìa (URL)</label><input class="input" id="imageUrl" name="imageUrl" data-maxlength="500"></div>
+            <div class="field"><label for="description">Mô tả</label><textarea class="input" id="description" name="description" rows="3" data-maxlength="2000"></textarea></div>
+            <div class="field"><label>Tháng đẹp (1–12)</label><div class="months-grid" id="best-months-grid"></div></div>
+          </section>
+
+          <section class="card form-section">
+            <div class="section-head">
+              <h2>Địa điểm nổi bật</h2>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-add-spot">+ Thêm địa điểm</button>
+            </div>
+            <div class="sub-list" id="spots-list"></div>
+          </section>
+
+          <section class="card form-section">
+            <div class="section-head">
+              <h2>Chi phí tham khảo</h2>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-add-cost">+ Thêm chi phí</button>
+            </div>
+            <div class="sub-list" id="costs-list"></div>
+          </section>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+  <script type="module" src="js/layout.js"></script>
+  <script type="module" src="js/pages/quan-tri-diem-den.js"></script>
+</body>
+</html>
