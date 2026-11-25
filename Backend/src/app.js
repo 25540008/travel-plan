@@ -10,7 +10,16 @@ const app = express();
 
 app.set('trust proxy', 1); // Render đứng sau proxy, cần để lấy đúng IP (rate limit NFR 4)
 app.use(helmet());
-app.use(cors(env.corsOrigins.length ? { origin: env.corsOrigins } : undefined));
+app.use(cors({
+    origin(origin, callback) {
+      if (!origin) return callback(null, true); // healthcheck Render, curl, Postman
+      if (!env.isProd && env.corsOrigins.length === 0) return callback(null, true);
+      if (env.corsOrigins.includes(origin)) return callback(null, true);
+      return callback(new AppError(403, 'CORS_NOT_ALLOWED', 'Domain không được phép truy cập API.'));
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json({ limit: '1mb' }));
 if (!env.isTest) app.use(morgan(env.isProd ? 'combined' : 'dev'));
 
