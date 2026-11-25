@@ -5,6 +5,8 @@ import { pageUrl } from './config.js';
 import { getUser, isLoggedIn, clearSession } from './auth.js';
 import { confirmDialog } from './ui.js';
 import { msg } from './messages.js';
+import { get } from './api.js';
+import { getUser, isLoggedIn, clearSession, updateUser } from './auth.js';
 
 const NAV = [
   { key: 'home', label: 'Trang chủ' },
@@ -76,6 +78,23 @@ function renderHeader(el, current) {
       clearSession();
       location.href = pageUrl('home');
     });
+  }
+
+ if (isLoggedIn()) {
+  const nav = header.querySelector('.site-nav');
+  get('/auth/me', { silent: true })
+    .then((me) => {
+      updateUser(me);
+      if (me?.role !== 'CONTENT_ADMIN') return;
+      if (nav.querySelector('[data-nav="adminDestinations"]')) return;
+      const a = document.createElement('a');
+      a.href = pageUrl('adminDestinations');
+      a.dataset.nav = 'adminDestinations';
+      a.textContent = 'Quản trị';
+      if (current === 'adminDestinations') a.setAttribute('aria-current', 'page');
+      nav.append(a);
+    })
+    .catch(() => {});
   }
 }
 

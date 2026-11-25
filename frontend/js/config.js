@@ -26,6 +26,7 @@ export const PAGES = {
   register: 'dang-ky.html',              // Screen 11
   forgotPassword: 'quen-mat-khau.html',  // Screen 12
   resetPassword: 'dat-lai-mat-khau.html',
+  adminDestinations: 'quan-tri-diem-den.html',
 };
 
 /**
